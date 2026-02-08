@@ -69,7 +69,7 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 ### Run in Development
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Chronomap.git
+git clone https://github.com/saagar210/Chronomap.git
 cd Chronomap
 pnpm install
 pnpm tauri dev

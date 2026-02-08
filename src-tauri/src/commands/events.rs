@@ -166,6 +166,73 @@ pub fn delete_event(db: State<'_, Mutex<Connection>>, id: String) -> AppResult<(
     Ok(())
 }
 
+#[tauri::command]
+pub fn bulk_delete_events(db: State<'_, Mutex<Connection>>, ids: Vec<String>) -> AppResult<u32> {
+    let conn = db.lock().map_err(|e| AppError::Internal(e.to_string()))?;
+    let placeholders: Vec<String> = ids.iter().enumerate().map(|(i, _)| format!("?{}", i + 1)).collect();
+    let sql = format!("DELETE FROM events WHERE id IN ({})", placeholders.join(", "));
+    let params: Vec<&dyn rusqlite::types::ToSql> = ids.iter().map(|id| id as &dyn rusqlite::types::ToSql).collect();
+    let changes = conn.execute(&sql, params.as_slice())?;
+    Ok(changes as u32)
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BulkUpdateInput {
+    pub ids: Vec<String>,
+    pub track_id: Option<String>,
+    pub color: Option<String>,
+    pub importance: Option<i32>,
+    pub tags: Option<String>,
+}
+
+#[tauri::command]
+pub fn bulk_update_events(db: State<'_, Mutex<Connection>>, input: BulkUpdateInput) -> AppResult<u32> {
+    let conn = db.lock().map_err(|e| AppError::Internal(e.to_string()))?;
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+    let mut sets = vec!["updated_at = ?1".to_string()];
+    let mut params_list: Vec<Box<dyn rusqlite::types::ToSql>> = vec![Box::new(now)];
+    let mut param_idx = 2u32;
+
+    if let Some(ref track_id) = input.track_id {
+        sets.push(format!("track_id = ?{param_idx}"));
+        params_list.push(Box::new(track_id.clone()));
+        param_idx += 1;
+    }
+    if let Some(ref color) = input.color {
+        sets.push(format!("color = ?{param_idx}"));
+        params_list.push(Box::new(color.clone()));
+        param_idx += 1;
+    }
+    if let Some(importance) = input.importance {
+        sets.push(format!("importance = ?{param_idx}"));
+        params_list.push(Box::new(importance));
+        param_idx += 1;
+    }
+    if let Some(ref tags) = input.tags {
+        sets.push(format!("tags = ?{param_idx}"));
+        params_list.push(Box::new(tags.clone()));
+        param_idx += 1;
+    }
+
+    // Build IN clause for event IDs
+    let id_placeholders: Vec<String> = input.ids.iter().enumerate().map(|(i, _)| format!("?{}", param_idx + i as u32)).collect();
+    for id in &input.ids {
+        params_list.push(Box::new(id.clone()));
+    }
+
+    let sql = format!(
+        "UPDATE events SET {} WHERE id IN ({})",
+        sets.join(", "),
+        id_placeholders.join(", ")
+    );
+
+    let params_refs: Vec<&dyn rusqlite::types::ToSql> = params_list.iter().map(|b| b.as_ref()).collect();
+    let changes = conn.execute(&sql, params_refs.as_slice())?;
+    Ok(changes as u32)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::db::init_test_db;
@@ -214,6 +281,75 @@ mod tests {
             )
             .unwrap();
         assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_bulk_operations() {
+        let conn = init_test_db().unwrap();
+
+        // Create timeline and track
+        let tl_id = uuid::Uuid::new_v4().to_string();
+        let tr_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO timelines (id, title) VALUES (?1, ?2)",
+            params![tl_id, "Bulk Test"],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name) VALUES (?1, ?2, ?3)",
+            params![tr_id, tl_id, "Track 1"],
+        )
+        .unwrap();
+
+        // Create 3 events
+        let ev1 = uuid::Uuid::new_v4().to_string();
+        let ev2 = uuid::Uuid::new_v4().to_string();
+        let ev3 = uuid::Uuid::new_v4().to_string();
+        for (id, title) in [(&ev1, "Event A"), (&ev2, "Event B"), (&ev3, "Event C")] {
+            conn.execute(
+                "INSERT INTO events (id, timeline_id, track_id, title, start_date) VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![id, tl_id, tr_id, title, "2024-01-01"],
+            ).unwrap();
+        }
+
+        // Verify all 3 exist
+        let count: i32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM events WHERE timeline_id = ?1",
+                [&tl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 3);
+
+        // Bulk delete 2 of 3 using the same SQL pattern as bulk_delete_events command
+        let changes = conn
+            .execute(
+                "DELETE FROM events WHERE id IN (?1, ?2)",
+                params![ev1, ev2],
+            )
+            .unwrap();
+        assert_eq!(changes, 2);
+
+        // Verify only 1 remains
+        let count: i32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM events WHERE timeline_id = ?1",
+                [&tl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 1);
+
+        // Verify the surviving event is ev3
+        let remaining_title: String = conn
+            .query_row(
+                "SELECT title FROM events WHERE id = ?1",
+                [&ev3],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(remaining_title, "Event C");
     }
 
     #[test]

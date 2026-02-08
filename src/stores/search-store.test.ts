@@ -18,6 +18,10 @@ describe("useSearchStore", () => {
         trackIds: [],
         eventTypes: [],
         minImportance: 0,
+        dateFrom: "",
+        dateTo: "",
+        aiGenerated: null,
+        tags: "",
       },
     });
     vi.clearAllMocks();
@@ -147,6 +151,10 @@ describe("useSearchStore", () => {
           trackIds: ["t1"],
           eventTypes: ["point"],
           minImportance: 5,
+          dateFrom: "2020-01-01",
+          dateTo: "2025-01-01",
+          aiGenerated: true,
+          tags: "war",
         },
       });
 

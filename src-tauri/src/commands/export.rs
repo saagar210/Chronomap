@@ -336,6 +336,24 @@ pub async fn show_open_dialog(
     Ok(dialog.map(|f| f.path().to_string_lossy().to_string()))
 }
 
+#[tauri::command]
+pub fn export_svg(
+    db: State<'_, Mutex<Connection>>,
+    timeline_id: String,
+) -> AppResult<String> {
+    let conn = db.lock().map_err(|e| AppError::Internal(e.to_string()))?;
+    crate::export::svg::generate_svg(&conn, &timeline_id)
+}
+
+#[tauri::command]
+pub fn export_pdf(
+    db: State<'_, Mutex<Connection>>,
+    timeline_id: String,
+) -> AppResult<Vec<u8>> {
+    let conn = db.lock().map_err(|e| AppError::Internal(e.to_string()))?;
+    crate::export::pdf::generate_pdf(&conn, &timeline_id)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::db::init_test_db;

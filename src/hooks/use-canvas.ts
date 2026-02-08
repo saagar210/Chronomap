@@ -34,11 +34,20 @@ export function useCanvas(
       if (!canvas) return;
 
       const state = useCanvasStore.getState();
-      if (!state.needsRender) return;
+
+      // Animate zoom toward target before rendering
+      const isAnimating = state.targetZoom !== state.zoomLevel;
+      if (isAnimating) {
+        state.animateZoom();
+      }
+
+      // Re-read state after potential animation update
+      const current = isAnimating ? useCanvasStore.getState() : state;
+      if (!current.needsRender && !isAnimating) return;
 
       const dpr = window.devicePixelRatio || 1;
-      const width = state.viewportWidth;
-      const height = state.viewportHeight;
+      const width = current.viewportWidth;
+      const height = current.viewportHeight;
 
       canvas.width = width * dpr;
       canvas.height = height * dpr;
@@ -48,7 +57,11 @@ export function useCanvas(
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      state.markClean();
+      // Only mark clean when zoom animation has stabilized
+      const stillAnimating = Math.abs(current.targetZoom - current.zoomLevel) >= 0.001;
+      if (!stillAnimating) {
+        current.markClean();
+      }
 
       // Read theme colors from CSS custom properties
       const style = getComputedStyle(document.documentElement);
@@ -66,18 +79,22 @@ export function useCanvas(
       const { useEventStore } = require("../stores/event-store");
       const { useTrackStore } = require("../stores/track-store");
       const { useSearchStore } = require("../stores/search-store");
+      const { useConnectionStore } = require("../stores/connection-store");
 
       rendererRef.current.render({
         ctx,
         width,
         height,
         dpr,
-        zoom: state.zoomLevel,
-        panX: state.panOffset.x,
-        panY: state.panOffset.y,
+        zoom: current.zoomLevel,
+        panX: current.panOffset.x,
+        panY: current.panOffset.y,
         tracks: useTrackStore.getState().tracks,
         events: useEventStore.getState().events,
+        connections: useConnectionStore.getState().connections,
         selectedEventId: useEventStore.getState().selectedEventId,
+        selectedEventIds: useEventStore.getState().selectedEventIds,
+        selectedConnectionId: useConnectionStore.getState().selectedConnectionId,
         highlightedEventIds: useSearchStore.getState().filteredEventIds,
         colors,
       });

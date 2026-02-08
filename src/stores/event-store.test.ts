@@ -7,6 +7,8 @@ vi.mock("../lib/commands", () => ({
   createEvent: vi.fn(),
   updateEvent: vi.fn(),
   deleteEvent: vi.fn(),
+  bulkDeleteEvents: vi.fn(),
+  bulkUpdateEvents: vi.fn(),
 }));
 
 const mockEvent = (overrides = {}) => ({
@@ -37,6 +39,7 @@ describe("useEventStore", () => {
     useEventStore.setState({
       events: [],
       selectedEventId: null,
+      selectedEventIds: new Set<string>(),
       loading: false,
       error: null,
     });
@@ -179,5 +182,88 @@ describe("useEventStore", () => {
     expect(useEventStore.getState().events).toEqual([]);
     expect(useEventStore.getState().selectedEventId).toBeNull();
     expect(useEventStore.getState().error).toBeNull();
+  });
+
+  describe("toggleEventSelection", () => {
+    it("adds an id to selectedEventIds", () => {
+      useEventStore.getState().toggleEventSelection("e1");
+      expect(useEventStore.getState().selectedEventIds).toEqual(
+        new Set(["e1"])
+      );
+    });
+
+    it("removes an id if already selected", () => {
+      useEventStore.setState({ selectedEventIds: new Set(["e1", "e2"]) });
+
+      useEventStore.getState().toggleEventSelection("e1");
+
+      expect(useEventStore.getState().selectedEventIds).toEqual(
+        new Set(["e2"])
+      );
+    });
+
+    it("clears selectedEventId when toggling", () => {
+      useEventStore.setState({ selectedEventId: "e5" });
+
+      useEventStore.getState().toggleEventSelection("e1");
+
+      expect(useEventStore.getState().selectedEventId).toBeNull();
+    });
+  });
+
+  describe("selectEventsInRange", () => {
+    it("sets selectedEventIds from an array", () => {
+      useEventStore.getState().selectEventsInRange(["e1", "e2", "e3"]);
+
+      expect(useEventStore.getState().selectedEventIds).toEqual(
+        new Set(["e1", "e2", "e3"])
+      );
+    });
+
+    it("replaces any previous selection", () => {
+      useEventStore.setState({ selectedEventIds: new Set(["old"]) });
+
+      useEventStore.getState().selectEventsInRange(["e1", "e2"]);
+
+      expect(useEventStore.getState().selectedEventIds).toEqual(
+        new Set(["e1", "e2"])
+      );
+    });
+
+    it("clears selectedEventId", () => {
+      useEventStore.setState({ selectedEventId: "e5" });
+
+      useEventStore.getState().selectEventsInRange(["e1"]);
+
+      expect(useEventStore.getState().selectedEventId).toBeNull();
+    });
+  });
+
+  describe("clearSelection", () => {
+    it("resets both selectedEventId and selectedEventIds", () => {
+      useEventStore.setState({
+        selectedEventId: "e1",
+        selectedEventIds: new Set(["e2", "e3"]),
+      });
+
+      useEventStore.getState().clearSelection();
+
+      const state = useEventStore.getState();
+      expect(state.selectedEventId).toBeNull();
+      expect(state.selectedEventIds).toEqual(new Set());
+    });
+  });
+
+  describe("selectEvent clears multi-select", () => {
+    it("clears selectedEventIds when single-selecting", () => {
+      useEventStore.setState({
+        selectedEventIds: new Set(["e2", "e3"]),
+      });
+
+      useEventStore.getState().selectEvent("e1");
+
+      expect(useEventStore.getState().selectedEventIds).toEqual(new Set());
+      expect(useEventStore.getState().selectedEventId).toBe("e1");
+    });
   });
 });

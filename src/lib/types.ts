@@ -125,3 +125,11 @@ export interface UpdateEventInput {
   tags?: string;
   source?: string;
 }
+
+export interface BulkUpdateInput {
+  ids: string[];
+  trackId?: string;
+  color?: string;
+  importance?: number;
+  tags?: string;
+}

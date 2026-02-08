@@ -12,6 +12,7 @@ import type {
   UpdateTrackInput,
   CreateEventInput,
   UpdateEventInput,
+  BulkUpdateInput,
 } from "./types";
 
 // Timelines
@@ -48,6 +49,10 @@ export const updateEvent = (input: UpdateEventInput) =>
   invoke<TimelineEvent>("update_event", { input });
 export const deleteEvent = (id: string) =>
   invoke<void>("delete_event", { id });
+export const bulkDeleteEvents = (ids: string[]) =>
+  invoke<number>("bulk_delete_events", { ids });
+export const bulkUpdateEvents = (input: BulkUpdateInput) =>
+  invoke<number>("bulk_update_events", { input });
 
 // Connections
 export interface CreateConnectionInput {
@@ -100,6 +105,10 @@ export const exportCsv = (timelineId: string) =>
   invoke<string>("export_csv", { timelineId });
 export const exportMarkdown = (timelineId: string) =>
   invoke<string>("export_markdown", { timelineId });
+export const exportSvg = (timelineId: string) =>
+  invoke<string>("export_svg", { timelineId });
+export const exportPdf = (timelineId: string) =>
+  invoke<number[]>("export_pdf", { timelineId });
 export const saveFile = (path: string, content: string) =>
   invoke<void>("save_file", { path, content });
 

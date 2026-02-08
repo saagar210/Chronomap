@@ -8,12 +8,16 @@ import {
   Upload,
   Bot,
   LayoutTemplate,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import { useTimelineStore } from "../../stores/timeline-store";
 import { useThemeStore } from "../../stores/theme-store";
 import { useCanvasStore } from "../../stores/canvas-store";
 import { useEventStore } from "../../stores/event-store";
 import { useTrackStore } from "../../stores/track-store";
+import { useHistoryStore } from "../../stores/history-store";
+import { useToastStore } from "../../stores/toast-store";
 import { fitAllEvents } from "../../lib/canvas-math";
 import { IconButton } from "../common/IconButton";
 import { Modal } from "../common/Modal";
@@ -34,6 +38,30 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
     useTimelineStore();
   const { createTimeline } = useTimelineStore();
   const { theme, setTheme } = useThemeStore();
+  const undoStack = useHistoryStore((s) => s.undoStack);
+  const redoStack = useHistoryStore((s) => s.redoStack);
+
+  const handleUndo = async () => {
+    const history = useHistoryStore.getState();
+    if (!history.canUndo()) return;
+    await history.undo();
+    if (activeTimelineId) {
+      await useEventStore.getState().loadEvents(activeTimelineId);
+    }
+    useCanvasStore.getState().markDirty();
+    useToastStore.getState().addToast({ type: "info", title: "Undone" });
+  };
+
+  const handleRedo = async () => {
+    const history = useHistoryStore.getState();
+    if (!history.canRedo()) return;
+    await history.redo();
+    if (activeTimelineId) {
+      await useEventStore.getState().loadEvents(activeTimelineId);
+    }
+    useCanvasStore.getState().markDirty();
+    useToastStore.getState().addToast({ type: "info", title: "Redone" });
+  };
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -130,6 +158,22 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
             </IconButton>
           </>
         )}
+
+        <div className="w-px h-5 bg-border" />
+        <IconButton
+          tooltip="Undo (⌘Z)"
+          onClick={handleUndo}
+          disabled={undoStack.length === 0}
+        >
+          <Undo2 size={16} />
+        </IconButton>
+        <IconButton
+          tooltip="Redo (⌘⇧Z)"
+          onClick={handleRedo}
+          disabled={redoStack.length === 0}
+        >
+          <Redo2 size={16} />
+        </IconButton>
 
         <div className="w-px h-5 bg-border" />
         <div className="w-48">

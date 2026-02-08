@@ -1,1 +1,2 @@
-// Export module - will be implemented in Phase 7
+pub mod pdf;
+pub mod svg;

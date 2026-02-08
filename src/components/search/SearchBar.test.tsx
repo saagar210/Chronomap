@@ -24,7 +24,7 @@ describe("SearchBar", () => {
       filteredEventIds: null,
       loading: false,
       error: null,
-      filters: { trackIds: [], eventTypes: [], minImportance: 0 },
+      filters: { trackIds: [], eventTypes: [], minImportance: 0, dateFrom: "", dateTo: "", aiGenerated: null, tags: "" },
     });
     useTimelineStore.setState({
       timelines: [],

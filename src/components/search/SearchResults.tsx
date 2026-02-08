@@ -2,14 +2,20 @@ import { Calendar } from "lucide-react";
 import { LoadingSpinner } from "../common/LoadingSpinner";
 import { useSearchStore } from "../../stores/search-store";
 import { useEventStore } from "../../stores/event-store";
+import { useCanvasStore } from "../../stores/canvas-store";
+import { useUiStore } from "../../stores/ui-store";
 import { formatDate, truncate } from "../../lib/utils";
 
 export function SearchResults() {
   const { results, loading, query } = useSearchStore();
   const selectEvent = useEventStore((s) => s.selectEvent);
 
-  const handleResultClick = (eventId: string) => {
+  const handleResultClick = (eventId: string, startDate: string) => {
     selectEvent(eventId);
+    useCanvasStore.getState().panToDate(startDate);
+    useCanvasStore.getState().markDirty();
+    const uiState = useUiStore.getState();
+    if (uiState.detailPanelCollapsed) uiState.toggleDetailPanel();
   };
 
   if (loading) {
@@ -35,7 +41,7 @@ export function SearchResults() {
       {results.map((result) => (
         <button
           key={result.eventId}
-          onClick={() => handleResultClick(result.eventId)}
+          onClick={() => handleResultClick(result.eventId, result.startDate)}
           className="w-full text-left px-3 py-2 hover:bg-bg-tertiary transition-colors border-b border-border last:border-b-0 cursor-pointer"
         >
           <div className="flex items-start gap-2">

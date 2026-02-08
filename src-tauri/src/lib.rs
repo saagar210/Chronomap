@@ -51,6 +51,8 @@ pub fn run() {
             events::list_events,
             events::update_event,
             events::delete_event,
+            events::bulk_delete_events,
+            events::bulk_update_events,
             // Connections
             connections::create_connection,
             connections::list_connections,
@@ -69,6 +71,8 @@ pub fn run() {
             export_cmd::read_file,
             export_cmd::show_save_dialog,
             export_cmd::show_open_dialog,
+            export_cmd::export_svg,
+            export_cmd::export_pdf,
             // Templates
             templates::list_templates,
             templates::create_from_template,

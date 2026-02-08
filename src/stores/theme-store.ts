@@ -25,7 +25,10 @@ export const useThemeStore = create<ThemeStore>((set) => ({
   loadTheme: async () => {
     try {
       const setting = await cmd.getSetting("theme");
-      const theme = setting.value as Theme;
+      const value = setting.value;
+      const theme: Theme = value === "light" || value === "dark" || value === "system"
+        ? value
+        : "system";
       set({ theme });
       applyTheme(theme);
     } catch {

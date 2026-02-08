@@ -65,6 +65,7 @@ export function useCanvas(
       // Import stores lazily to avoid circular deps
       const { useEventStore } = require("../stores/event-store");
       const { useTrackStore } = require("../stores/track-store");
+      const { useSearchStore } = require("../stores/search-store");
 
       rendererRef.current.render({
         ctx,
@@ -77,7 +78,7 @@ export function useCanvas(
         tracks: useTrackStore.getState().tracks,
         events: useEventStore.getState().events,
         selectedEventId: useEventStore.getState().selectedEventId,
-        highlightedEventIds: null, // Phase 5: search
+        highlightedEventIds: useSearchStore.getState().filteredEventIds,
         colors,
       });
     };

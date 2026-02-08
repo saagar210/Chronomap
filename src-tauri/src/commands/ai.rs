@@ -26,8 +26,9 @@ pub struct AiGeneratedEvent {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(dead_code)]
 pub struct AiChatMessage {
+    /// Used by frontend to indicate sender; deserialized but not read in Rust.
+    #[allow(dead_code)]
     pub role: String,
     pub content: String,
 }

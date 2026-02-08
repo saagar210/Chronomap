@@ -83,7 +83,11 @@ pub fn import_json(
         track_map.insert("Default".to_string(), default_id);
     }
 
-    let default_track_id = track_map.values().next().unwrap().clone();
+    let default_track_id = track_map
+        .values()
+        .next()
+        .ok_or_else(|| AppError::Internal("No tracks available".to_string()))?
+        .clone();
 
     // Create events, map title→id
     let mut event_map = std::collections::HashMap::new();
@@ -184,6 +188,7 @@ pub fn import_csv(
         .map_err(|_| AppError::Validation("Timeline has no tracks".to_string()))?;
 
     let mut count = 0u32;
+    let mut skipped = 0u32;
     for result in reader.records() {
         let record = result.map_err(|e| AppError::Validation(format!("CSV row error: {e}")))?;
 
@@ -191,6 +196,7 @@ pub fn import_csv(
         let start_date = record.get(date_idx).unwrap_or("").trim();
 
         if title.is_empty() || start_date.is_empty() {
+            skipped += 1;
             continue;
         }
 
@@ -199,9 +205,9 @@ pub fn import_csv(
             let v = record.get(i).unwrap_or("").trim();
             if v.is_empty() { None } else { Some(v.to_string()) }
         });
-        let description = desc_idx.map(|i| record.get(i).unwrap_or("").to_string()).unwrap_or_default();
-        let tags = tags_idx.map(|i| record.get(i).unwrap_or("").to_string()).unwrap_or_default();
-        let event_type = type_idx.map(|i| record.get(i).unwrap_or("point").to_string()).unwrap_or_else(|| "point".to_string());
+        let description = desc_idx.and_then(|i| record.get(i)).unwrap_or("").to_string();
+        let tags = tags_idx.and_then(|i| record.get(i)).unwrap_or("").to_string();
+        let event_type = type_idx.and_then(|i| record.get(i)).unwrap_or("point").to_string();
 
         conn.execute(
             "INSERT INTO events (id, timeline_id, track_id, title, description, start_date, end_date, event_type, importance, tags, created_at, updated_at)
@@ -209,6 +215,10 @@ pub fn import_csv(
             rusqlite::params![event_id, timeline_id, track_id, title, description, start_date, end_date, event_type, tags, now, now],
         )?;
         count += 1;
+    }
+
+    if skipped > 0 {
+        tracing::warn!("CSV import: skipped {skipped} rows with empty title or date");
     }
 
     Ok(count)

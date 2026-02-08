@@ -41,6 +41,9 @@ pub fn create_event(db: State<'_, Mutex<Connection>>, input: CreateEvent) -> App
     if input.title.trim().is_empty() {
         return Err(AppError::Validation("Title is required".to_string()));
     }
+    if input.title.len() > 500 {
+        return Err(AppError::Validation("Title must be 500 characters or fewer".to_string()));
+    }
 
     let event_type = input.event_type.unwrap_or_else(|| "point".to_string());
     let importance = input.importance.unwrap_or(3);
@@ -132,10 +135,7 @@ pub fn update_event(db: State<'_, Mutex<Connection>>, input: UpdateEvent) -> App
     if let Some(importance) = input.importance {
         sets.push(format!("importance = ?{param_idx}"));
         params_list.push(Box::new(importance));
-        param_idx += 1;
     }
-    let _ = param_idx; // suppress unused warning
-
     let sql = format!(
         "UPDATE events SET {} WHERE id = ?{}",
         sets.join(", "),

@@ -93,7 +93,7 @@ export class CanvasRenderer {
     this.drawAxis(ctx, width, canvasHeight, zoom, panX, colors);
 
     // Draw today marker
-    this.drawTodayMarker(ctx, zoom, panX, panY, canvasHeight, colors);
+    this.drawTodayMarker(ctx, zoom, panX, canvasHeight, colors);
   }
 
   private drawTrackLanes(
@@ -303,6 +303,13 @@ export class CanvasRenderer {
     });
   }
 
+  private safeHexColor(color: string): string {
+    // Ensure color is valid hex before appending opacity suffixes
+    if (/^#[0-9a-fA-F]{6}$/.test(color)) return color;
+    if (/^#[0-9a-fA-F]{3}$/.test(color)) return color;
+    return "#3b82f6"; // fallback to accent blue
+  }
+
   private drawEra(
     ctx: CanvasRenderingContext2D,
     event: TimelineEvent,
@@ -316,15 +323,16 @@ export class CanvasRenderer {
       ? dateToPixel(event.endDate, zoom, panX)
       : startX + 100;
     const width = Math.max(endX - startX, 4);
+    const safeColor = this.safeHexColor(color);
 
-    ctx.fillStyle = color + "22"; // very translucent
+    ctx.fillStyle = safeColor + "22"; // very translucent
     ctx.fillRect(startX, trackY, width, TRACK_HEIGHT);
 
-    ctx.strokeStyle = color + "44";
+    ctx.strokeStyle = safeColor + "44";
     ctx.lineWidth = 1;
     ctx.strokeRect(startX, trackY, width, TRACK_HEIGHT);
 
-    ctx.fillStyle = color + "88";
+    ctx.fillStyle = safeColor + "88";
     ctx.font = "italic 10px -apple-system, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(event.title, startX + width / 2, trackY + 12);
@@ -382,7 +390,6 @@ export class CanvasRenderer {
     ctx: CanvasRenderingContext2D,
     zoom: number,
     panX: number,
-    _panY: number,
     canvasHeight: number,
     colors: { accent: string }
   ) {
@@ -422,9 +429,11 @@ export class CanvasRenderer {
 
   private contrastText(hexColor: string): string {
     const hex = hexColor.replace("#", "");
+    if (hex.length < 6) return "#000000";
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return "#000000";
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? "#000000" : "#ffffff";
   }

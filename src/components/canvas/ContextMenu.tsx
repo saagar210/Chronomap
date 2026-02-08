@@ -3,7 +3,6 @@ import { useEventStore } from "../../stores/event-store";
 import { useCanvasStore } from "../../stores/canvas-store";
 import { useUiStore } from "../../stores/ui-store";
 
-
 interface ContextMenuProps {
   x: number;
   y: number;

@@ -5,7 +5,6 @@ import {
   Moon,
   Monitor,
   Maximize2,
-  Plus as PlusEvent,
   Upload,
   Bot,
   LayoutTemplate,
@@ -124,7 +123,7 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
               tooltip="Add event"
               onClick={() => setShowNewEvent(true)}
             >
-              <PlusEvent size={16} />
+              <Plus size={16} />
             </IconButton>
             <IconButton tooltip="Fit all events" onClick={handleFitAll}>
               <Maximize2 size={16} />

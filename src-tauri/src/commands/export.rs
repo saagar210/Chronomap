@@ -78,34 +78,59 @@ pub fn export_json(
         .map(|(_, name, color)| ExportedTrack { name: name.clone(), color: color.clone() })
         .collect();
 
+    struct EventRow {
+        id: String,
+        title: String,
+        description: String,
+        start_date: String,
+        end_date: Option<String>,
+        event_type: String,
+        importance: i32,
+        track_id: String,
+        color: Option<String>,
+        tags: String,
+        source: Option<String>,
+    }
+
     let mut event_stmt = conn.prepare(
         "SELECT id, title, description, start_date, end_date, event_type, importance, track_id, color, tags, source FROM events WHERE timeline_id = ?1 ORDER BY start_date",
     )?;
-    #[allow(clippy::type_complexity)]
-    let events_raw: Vec<(String, String, String, String, Option<String>, String, i32, String, Option<String>, String, Option<String>)> = event_stmt
+    let events_raw: Vec<EventRow> = event_stmt
         .query_map([&timeline_id], |row| {
-            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?, row.get(6)?, row.get(7)?, row.get(8)?, row.get(9)?, row.get(10)?))
+            Ok(EventRow {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                description: row.get(2)?,
+                start_date: row.get(3)?,
+                end_date: row.get(4)?,
+                event_type: row.get(5)?,
+                importance: row.get(6)?,
+                track_id: row.get(7)?,
+                color: row.get(8)?,
+                tags: row.get(9)?,
+                source: row.get(10)?,
+            })
         })?
         .collect::<Result<Vec<_>, _>>()?;
 
     let event_title_map: std::collections::HashMap<String, String> = events_raw
         .iter()
-        .map(|(id, title, ..)| (id.clone(), title.clone()))
+        .map(|e| (e.id.clone(), e.title.clone()))
         .collect();
 
     let events: Vec<ExportedEvent> = events_raw
         .iter()
-        .map(|(_, title, desc, start, end, etype, imp, track_id, color, tags, source)| ExportedEvent {
-            title: title.clone(),
-            description: desc.clone(),
-            start_date: start.clone(),
-            end_date: end.clone(),
-            event_type: etype.clone(),
-            importance: *imp,
-            track_name: track_name_map.get(track_id).cloned().unwrap_or_default(),
-            color: color.clone(),
-            tags: tags.clone(),
-            source: source.clone(),
+        .map(|e| ExportedEvent {
+            title: e.title.clone(),
+            description: e.description.clone(),
+            start_date: e.start_date.clone(),
+            end_date: e.end_date.clone(),
+            event_type: e.event_type.clone(),
+            importance: e.importance,
+            track_name: track_name_map.get(&e.track_id).cloned().unwrap_or_default(),
+            color: e.color.clone(),
+            tags: e.tags.clone(),
+            source: e.source.clone(),
         })
         .collect();
 
@@ -177,10 +202,16 @@ pub fn export_csv(
         let (title, start, end, etype, imp, track_id, desc, tags) = row?;
         let track_name = track_names.get(&track_id).cloned().unwrap_or_default();
         let escape = |s: &str| {
-            if s.contains(',') || s.contains('"') || s.contains('\n') {
-                format!("\"{}\"", s.replace('"', "\"\""))
+            // Prevent CSV injection: prefix formula-starting chars
+            let safe = if s.starts_with('=') || s.starts_with('+') || s.starts_with('-') || s.starts_with('@') {
+                format!("'{s}")
             } else {
                 s.to_string()
+            };
+            if safe.contains(',') || safe.contains('"') || safe.contains('\n') {
+                format!("\"{}\"", safe.replace('"', "\"\""))
+            } else {
+                safe
             }
         };
         csv_out.push_str(&format!(
@@ -247,14 +278,32 @@ pub fn export_markdown(
     Ok(md)
 }
 
+fn validate_file_path(path: &str) -> AppResult<()> {
+    let p = std::path::Path::new(path);
+
+    // Block obviously dangerous paths
+    if path.contains("..") {
+        return Err(AppError::Validation("Path traversal not allowed".to_string()));
+    }
+
+    // Must be an absolute path (from a file dialog)
+    if !p.is_absolute() {
+        return Err(AppError::Validation("Absolute path required".to_string()));
+    }
+
+    Ok(())
+}
+
 #[tauri::command]
 pub fn save_file(path: String, content: String) -> AppResult<()> {
+    validate_file_path(&path)?;
     std::fs::write(&path, &content)
         .map_err(|e| AppError::Internal(format!("Failed to write file: {e}")))
 }
 
 #[tauri::command]
 pub fn read_file(path: String) -> AppResult<String> {
+    validate_file_path(&path)?;
     std::fs::read_to_string(&path)
         .map_err(|e| AppError::Internal(format!("Failed to read file: {e}")))
 }

@@ -70,6 +70,7 @@ export const useAiStore = create<AiStore>((set, get) => ({
         loading: false,
       }));
     } catch (e) {
+      console.error("AI chat error:", e);
       set({ error: String(e), loading: false });
     }
   },

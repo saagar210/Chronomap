@@ -1,13 +1,16 @@
 import { format, parseISO } from "date-fns";
 
+const YEAR_ONLY_RE = /^\d{4}$/;
+const YEAR_MONTH_RE = /^\d{4}-\d{2}$/;
+
 export function formatDate(dateStr: string): string {
   if (!dateStr) return "";
 
   // Year only: "2024"
-  if (/^\d{4}$/.test(dateStr)) return dateStr;
+  if (YEAR_ONLY_RE.test(dateStr)) return dateStr;
 
   // Year-month: "2024-06"
-  if (/^\d{4}-\d{2}$/.test(dateStr)) {
+  if (YEAR_MONTH_RE.test(dateStr)) {
     const [year, month] = dateStr.split("-");
     return format(new Date(Number(year), Number(month) - 1), "MMM yyyy");
   }

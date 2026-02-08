@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Plus, Sun, Moon, Monitor } from "lucide-react";
+import { Plus, Sun, Moon, Monitor, Maximize2, Plus as PlusEvent } from "lucide-react";
 import { useTimelineStore } from "../../stores/timeline-store";
 import { useThemeStore } from "../../stores/theme-store";
+import { useCanvasStore } from "../../stores/canvas-store";
+import { useEventStore } from "../../stores/event-store";
+import { useTrackStore } from "../../stores/track-store";
+import { fitAllEvents } from "../../lib/canvas-math";
 import { IconButton } from "../common/IconButton";
 import { Modal } from "../common/Modal";
 import { Input } from "../common/Input";
@@ -12,15 +16,42 @@ export function TitleBar() {
   const { createTimeline } = useTimelineStore();
   const { theme, setTheme } = useThemeStore();
   const [showNewDialog, setShowNewDialog] = useState(false);
+  const [showNewEvent, setShowNewEvent] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-
-  const activeTimeline = timelines.find((t) => t.id === activeTimelineId);
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventDate, setEventDate] = useState("");
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
     await createTimeline({ title: newTitle.trim() });
     setNewTitle("");
     setShowNewDialog(false);
+  };
+
+  const handleCreateEvent = async () => {
+    if (!eventTitle.trim() || !eventDate.trim()) return;
+    const { tracks } = useTrackStore.getState();
+    if (tracks.length === 0 || !activeTimelineId) return;
+    await useEventStore.getState().createEvent({
+      timelineId: activeTimelineId,
+      trackId: tracks[0].id,
+      title: eventTitle.trim(),
+      startDate: eventDate.trim(),
+    });
+    setEventTitle("");
+    setEventDate("");
+    setShowNewEvent(false);
+    useCanvasStore.getState().markDirty();
+  };
+
+  const handleFitAll = () => {
+    const events = useEventStore.getState().events;
+    const { viewportWidth } = useCanvasStore.getState();
+    if (viewportWidth > 0) {
+      const { zoom, panOffsetX } = fitAllEvents(events, viewportWidth);
+      useCanvasStore.getState().setZoom(zoom);
+      useCanvasStore.getState().setPan(panOffsetX, 0);
+    }
   };
 
   const cycleTheme = () => {
@@ -54,13 +85,19 @@ export function TitleBar() {
           <Plus size={16} />
         </IconButton>
 
-        <div className="flex-1" />
-
-        {activeTimeline && (
-          <span className="text-xs text-text-muted hidden sm:block">
-            {activeTimeline.title}
-          </span>
+        {activeTimelineId && (
+          <>
+            <div className="w-px h-5 bg-border" />
+            <IconButton tooltip="Add event" onClick={() => setShowNewEvent(true)}>
+              <PlusEvent size={16} />
+            </IconButton>
+            <IconButton tooltip="Fit all events" onClick={handleFitAll}>
+              <Maximize2 size={16} />
+            </IconButton>
+          </>
         )}
+
+        <div className="flex-1" />
 
         <IconButton tooltip={`Theme: ${theme}`} onClick={cycleTheme}>
           <ThemeIcon size={16} />
@@ -72,27 +109,26 @@ export function TitleBar() {
         onClose={() => setShowNewDialog(false)}
         title="New Timeline"
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleCreate();
-          }}
-          className="flex flex-col gap-3"
-        >
-          <Input
-            label="Title"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="My Timeline"
-            autoFocus
-          />
+        <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }} className="flex flex-col gap-3">
+          <Input label="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="My Timeline" autoFocus />
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" type="button" onClick={() => setShowNewDialog(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit" disabled={!newTitle.trim()}>
-              Create
-            </Button>
+            <Button variant="ghost" type="button" onClick={() => setShowNewDialog(false)}>Cancel</Button>
+            <Button variant="primary" type="submit" disabled={!newTitle.trim()}>Create</Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        open={showNewEvent}
+        onClose={() => setShowNewEvent(false)}
+        title="New Event"
+      >
+        <form onSubmit={(e) => { e.preventDefault(); handleCreateEvent(); }} className="flex flex-col gap-3">
+          <Input label="Title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} placeholder="Event title" autoFocus />
+          <Input label="Date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} placeholder="YYYY-MM-DD" />
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" type="button" onClick={() => setShowNewEvent(false)}>Cancel</Button>
+            <Button variant="primary" type="submit" disabled={!eventTitle.trim() || !eventDate.trim()}>Create</Button>
           </div>
         </form>
       </Modal>

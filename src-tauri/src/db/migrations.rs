@@ -3,8 +3,14 @@ use rusqlite::Connection;
 use crate::error::AppResult;
 
 const MIGRATION_001: &str = include_str!("../migrations/001_initial.sql");
+const MIGRATION_002: &str = include_str!("../migrations/002_fts.sql");
+const MIGRATION_003: &str = include_str!("../migrations/003_templates.sql");
 
-const MIGRATIONS: &[(&str, &str)] = &[("001_initial", MIGRATION_001)];
+const MIGRATIONS: &[(&str, &str)] = &[
+    ("001_initial", MIGRATION_001),
+    ("002_fts", MIGRATION_002),
+    ("003_templates", MIGRATION_003),
+];
 
 pub fn run_migrations(conn: &Connection) -> AppResult<()> {
     conn.execute_batch(
@@ -46,7 +52,7 @@ mod tests {
         let count: i32 = conn
             .query_row("SELECT COUNT(*) FROM _migrations", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(count, 1);
+        assert_eq!(count, MIGRATIONS.len() as i32);
     }
 
     #[test]

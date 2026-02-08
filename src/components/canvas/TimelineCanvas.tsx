@@ -1,22 +1,34 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useCanvas } from "../../hooks/use-canvas";
 import { useZoomPan } from "../../hooks/use-zoom-pan";
+import { useEventInteraction } from "../../hooks/use-event-interaction";
+import { useContextMenu } from "../../hooks/use-context-menu";
 import { useCanvasStore } from "../../stores/canvas-store";
 import { useEventStore } from "../../stores/event-store";
 import { useTrackStore } from "../../stores/track-store";
 import { fitAllEvents } from "../../lib/canvas-math";
+import { ContextMenu } from "./ContextMenu";
+import { Tooltip } from "./Tooltip";
 
 export function TimelineCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useCanvas(canvasRef);
-  useZoomPan(canvasRef);
+  const { isPanning } = useZoomPan(canvasRef);
+  const { handleClick, handleDoubleClick, handleMouseDown, handleMouseMove, handleMouseUp } =
+    useEventInteraction(canvasRef, rendererRef);
+  const { menu, show: showContextMenu, hide: hideContextMenu } = useContextMenu();
 
   const events = useEventStore((s) => s.events);
   const tracks = useTrackStore((s) => s.tracks);
-  const selectEvent = useEventStore((s) => s.selectEvent);
   const markDirty = useCanvasStore((s) => s.markDirty);
 
-  // Re-render when data changes
+  // Tooltip state
+  const tooltipRef = useRef<{ eventId: string | null; x: number; y: number }>({
+    eventId: null,
+    x: 0,
+    y: 0,
+  });
+
   useEffect(() => {
     markDirty();
   }, [events, tracks, markDirty]);
@@ -35,35 +47,71 @@ export function TimelineCanvas() {
     }
   }, [events]);
 
-  // Click to select event
-  const handleClick = useCallback(
+  const handleContextMenu = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      e.preventDefault();
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
-      const eventId = rendererRef.current.hitTest(x, y);
-      selectEvent(eventId);
+      const eventId = rendererRef.current?.hitTest(x, y) ?? null;
       if (eventId) {
-        // Open detail panel
-        const { useUiStore } = require("../../stores/ui-store");
-        const uiState = useUiStore.getState();
-        if (uiState.detailPanelCollapsed) {
-          uiState.toggleDetailPanel();
-        }
+        useEventStore.getState().selectEvent(eventId);
+        markDirty();
       }
-      markDirty();
+      showContextMenu(e.clientX, e.clientY, eventId);
     },
-    [selectEvent, markDirty, rendererRef]
+    [showContextMenu, markDirty, rendererRef]
+  );
+
+  const handleHover = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      handleMouseMove(e);
+      if (isPanning.current) return;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const eventId = rendererRef.current?.hitTest(x, y) ?? null;
+      tooltipRef.current = { eventId, x: e.clientX, y: e.clientY };
+      canvas.style.cursor = eventId ? "pointer" : "grab";
+    },
+    [handleMouseMove, isPanning, rendererRef]
+  );
+
+  const hoveredEvent = events.find(
+    (ev) => ev.id === tooltipRef.current.eventId
   );
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full cursor-grab active:cursor-grabbing"
-      onClick={handleClick}
-    />
+    <div className="relative w-full h-full">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full"
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleHover}
+        onMouseUp={handleMouseUp}
+        onContextMenu={handleContextMenu}
+      />
+      {hoveredEvent && !menu.visible && (
+        <Tooltip
+          x={tooltipRef.current.x}
+          y={tooltipRef.current.y}
+          event={hoveredEvent}
+        />
+      )}
+      {menu.visible && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          eventId={menu.eventId}
+          onClose={hideContextMenu}
+        />
+      )}
+    </div>
   );
 }

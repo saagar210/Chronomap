@@ -1,4 +1,10 @@
+pub mod ai;
+pub mod connections;
 pub mod events;
+pub mod export;
+pub mod import;
+pub mod search;
 pub mod settings;
+pub mod templates;
 pub mod timelines;
 pub mod tracks;

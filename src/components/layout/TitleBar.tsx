@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { Plus, Sun, Moon, Monitor, Maximize2, Plus as PlusEvent } from "lucide-react";
+import {
+  Plus,
+  Sun,
+  Moon,
+  Monitor,
+  Maximize2,
+  Plus as PlusEvent,
+  Upload,
+  Bot,
+  LayoutTemplate,
+} from "lucide-react";
 import { useTimelineStore } from "../../stores/timeline-store";
 import { useThemeStore } from "../../stores/theme-store";
 import { useCanvasStore } from "../../stores/canvas-store";
@@ -10,13 +20,25 @@ import { IconButton } from "../common/IconButton";
 import { Modal } from "../common/Modal";
 import { Input } from "../common/Input";
 import { Button } from "../common/Button";
+import { SearchBar } from "../search/SearchBar";
+import { ExportMenu } from "../import-export/ExportMenu";
+import { ImportDialog } from "../import-export/ImportDialog";
+import { TemplateGallery } from "../templates/TemplateGallery";
+import { OllamaStatus } from "../ai/OllamaStatus";
 
-export function TitleBar() {
-  const { timelines, activeTimelineId, setActiveTimeline } = useTimelineStore();
+interface TitleBarProps {
+  onToggleAi?: () => void;
+}
+
+export function TitleBar({ onToggleAi }: TitleBarProps) {
+  const { timelines, activeTimelineId, setActiveTimeline } =
+    useTimelineStore();
   const { createTimeline } = useTimelineStore();
   const { theme, setTheme } = useThemeStore();
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showNewEvent, setShowNewEvent] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -81,14 +103,27 @@ export function TitleBar() {
           ))}
         </select>
 
-        <IconButton tooltip="New timeline" onClick={() => setShowNewDialog(true)}>
+        <IconButton
+          tooltip="New timeline"
+          onClick={() => setShowNewDialog(true)}
+        >
           <Plus size={16} />
+        </IconButton>
+
+        <IconButton
+          tooltip="From template"
+          onClick={() => setShowTemplates(true)}
+        >
+          <LayoutTemplate size={16} />
         </IconButton>
 
         {activeTimelineId && (
           <>
             <div className="w-px h-5 bg-border" />
-            <IconButton tooltip="Add event" onClick={() => setShowNewEvent(true)}>
+            <IconButton
+              tooltip="Add event"
+              onClick={() => setShowNewEvent(true)}
+            >
               <PlusEvent size={16} />
             </IconButton>
             <IconButton tooltip="Fit all events" onClick={handleFitAll}>
@@ -97,7 +132,31 @@ export function TitleBar() {
           </>
         )}
 
+        <div className="w-px h-5 bg-border" />
+        <div className="w-48">
+          <SearchBar />
+        </div>
+
         <div className="flex-1" />
+
+        {activeTimelineId && (
+          <>
+            <IconButton
+              tooltip="Import"
+              onClick={() => setShowImport(true)}
+            >
+              <Upload size={16} />
+            </IconButton>
+            <ExportMenu />
+          </>
+        )}
+
+        <div className="w-px h-5 bg-border" />
+        <OllamaStatus />
+
+        <IconButton tooltip="AI Assistant" onClick={onToggleAi}>
+          <Bot size={16} />
+        </IconButton>
 
         <IconButton tooltip={`Theme: ${theme}`} onClick={cycleTheme}>
           <ThemeIcon size={16} />
@@ -109,11 +168,35 @@ export function TitleBar() {
         onClose={() => setShowNewDialog(false)}
         title="New Timeline"
       >
-        <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }} className="flex flex-col gap-3">
-          <Input label="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="My Timeline" autoFocus />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleCreate();
+          }}
+          className="flex flex-col gap-3"
+        >
+          <Input
+            label="Title"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            placeholder="My Timeline"
+            autoFocus
+          />
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" type="button" onClick={() => setShowNewDialog(false)}>Cancel</Button>
-            <Button variant="primary" type="submit" disabled={!newTitle.trim()}>Create</Button>
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={() => setShowNewDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={!newTitle.trim()}
+            >
+              Create
+            </Button>
           </div>
         </form>
       </Modal>
@@ -123,15 +206,50 @@ export function TitleBar() {
         onClose={() => setShowNewEvent(false)}
         title="New Event"
       >
-        <form onSubmit={(e) => { e.preventDefault(); handleCreateEvent(); }} className="flex flex-col gap-3">
-          <Input label="Title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} placeholder="Event title" autoFocus />
-          <Input label="Date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} placeholder="YYYY-MM-DD" />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleCreateEvent();
+          }}
+          className="flex flex-col gap-3"
+        >
+          <Input
+            label="Title"
+            value={eventTitle}
+            onChange={(e) => setEventTitle(e.target.value)}
+            placeholder="Event title"
+            autoFocus
+          />
+          <Input
+            label="Date"
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+            placeholder="YYYY-MM-DD"
+          />
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" type="button" onClick={() => setShowNewEvent(false)}>Cancel</Button>
-            <Button variant="primary" type="submit" disabled={!eventTitle.trim() || !eventDate.trim()}>Create</Button>
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={() => setShowNewEvent(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={!eventTitle.trim() || !eventDate.trim()}
+            >
+              Create
+            </Button>
           </div>
         </form>
       </Modal>
+
+      <ImportDialog open={showImport} onClose={() => setShowImport(false)} />
+      <TemplateGallery
+        open={showTemplates}
+        onClose={() => setShowTemplates(false)}
+      />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TitleBar } from "./TitleBar";
 import { Sidebar } from "./Sidebar";
 import { DetailPanel } from "./DetailPanel";
@@ -7,6 +7,8 @@ import { useTrackStore } from "../../stores/track-store";
 import { useEventStore } from "../../stores/event-store";
 import { useThemeStore } from "../../stores/theme-store";
 import { TimelineCanvas } from "../canvas/TimelineCanvas";
+import { useKeyboardShortcuts } from "../../hooks/use-keyboard-shortcuts";
+import { AiPanel } from "../ai/AiPanel";
 import { EmptyState } from "../common/EmptyState";
 import { Button } from "../common/Button";
 import { Clock } from "lucide-react";
@@ -16,6 +18,8 @@ export function AppShell() {
   const { loadTracks, clearTracks } = useTrackStore();
   const { loadEvents, clearEvents } = useEventStore();
   const { loadTheme } = useThemeStore();
+  const [aiOpen, setAiOpen] = useState(false);
+  useKeyboardShortcuts();
 
   useEffect(() => {
     loadTimelines();
@@ -34,7 +38,7 @@ export function AppShell() {
 
   return (
     <div className="h-full flex flex-col">
-      <TitleBar />
+      <TitleBar onToggleAi={() => setAiOpen((prev) => !prev)} />
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />
         <main className="flex-1 bg-canvas-bg flex items-center justify-center overflow-hidden">
@@ -43,7 +47,11 @@ export function AppShell() {
           ) : (
             <EmptyState
               icon={<Clock size={48} />}
-              title={timelines.length === 0 ? "Welcome to ChronoMap" : "Select a Timeline"}
+              title={
+                timelines.length === 0
+                  ? "Welcome to ChronoMap"
+                  : "Select a Timeline"
+              }
               description={
                 timelines.length === 0
                   ? "Create your first timeline to get started"
@@ -68,6 +76,7 @@ export function AppShell() {
         </main>
         <DetailPanel />
       </div>
+      <AiPanel open={aiOpen} onClose={() => setAiOpen(false)} />
     </div>
   );
 }

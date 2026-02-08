@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "chronomap",
+  "productName": "ChronoMap",
   "version": "0.1.0",
-  "identifier": "com.d.chronomap",
+  "identifier": "com.chronomap.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "chronomap",
-        "width": 800,
-        "height": 600
+        "title": "ChronoMap",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 768,
+        "center": true
       }
     ],
     "security": {
@@ -30,6 +33,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "minimumSystemVersion": "13.0"
+    }
   }
 }

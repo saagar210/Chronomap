@@ -136,3 +136,109 @@ pub fn reorder_tracks(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::db::init_test_db;
+    use rusqlite::params;
+
+    #[test]
+    fn test_reorder_tracks() {
+        let conn = init_test_db().unwrap();
+
+        let tl_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO timelines (id, title) VALUES (?1, ?2)",
+            params![tl_id, "Test"],
+        )
+        .unwrap();
+
+        let t1 = uuid::Uuid::new_v4().to_string();
+        let t2 = uuid::Uuid::new_v4().to_string();
+        let t3 = uuid::Uuid::new_v4().to_string();
+
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, sort_order) VALUES (?1, ?2, 'Alpha', 0)",
+            params![t1, tl_id],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, sort_order) VALUES (?1, ?2, 'Beta', 1)",
+            params![t2, tl_id],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, sort_order) VALUES (?1, ?2, 'Gamma', 2)",
+            params![t3, tl_id],
+        )
+        .unwrap();
+
+        // Reorder: Gamma first, then Alpha, then Beta
+        let new_order = vec![t3.clone(), t1.clone(), t2.clone()];
+        for (i, id) in new_order.iter().enumerate() {
+            conn.execute(
+                "UPDATE tracks SET sort_order = ?1 WHERE id = ?2",
+                params![i as i32, id],
+            )
+            .unwrap();
+        }
+
+        // Verify new order
+        let mut stmt = conn
+            .prepare("SELECT name FROM tracks WHERE timeline_id = ?1 ORDER BY sort_order")
+            .unwrap();
+        let names: Vec<String> = stmt
+            .query_map([&tl_id], |row| row.get(0))
+            .unwrap()
+            .filter_map(|r| r.ok())
+            .collect();
+
+        assert_eq!(names, vec!["Gamma", "Alpha", "Beta"]);
+    }
+
+    #[test]
+    fn test_reorder_tracks_preserves_data() {
+        let conn = init_test_db().unwrap();
+
+        let tl_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO timelines (id, title) VALUES (?1, ?2)",
+            params![tl_id, "Test"],
+        )
+        .unwrap();
+
+        let t1 = uuid::Uuid::new_v4().to_string();
+        let t2 = uuid::Uuid::new_v4().to_string();
+
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, color, sort_order) VALUES (?1, ?2, 'Red Track', '#ff0000', 0)",
+            params![t1, tl_id],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, color, sort_order) VALUES (?1, ?2, 'Blue Track', '#0000ff', 1)",
+            params![t2, tl_id],
+        )
+        .unwrap();
+
+        // Swap order
+        conn.execute("UPDATE tracks SET sort_order = 0 WHERE id = ?1", [&t2]).unwrap();
+        conn.execute("UPDATE tracks SET sort_order = 1 WHERE id = ?1", [&t1]).unwrap();
+
+        // Verify colors are preserved after reorder
+        let (name, color): (String, String) = conn
+            .query_row(
+                "SELECT name, color FROM tracks WHERE id = ?1",
+                [&t1],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(name, "Red Track");
+        assert_eq!(color, "#ff0000");
+
+        let order: i32 = conn
+            .query_row("SELECT sort_order FROM tracks WHERE id = ?1", [&t1], |row| row.get(0))
+            .unwrap();
+        assert_eq!(order, 1);
+    }
+}

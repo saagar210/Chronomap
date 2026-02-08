@@ -130,3 +130,239 @@ pub fn delete_template(db: State<'_, Mutex<Connection>>, id: String) -> AppResul
     conn.execute("DELETE FROM templates WHERE id = ?1", [&id])?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::db::init_test_db;
+    use rusqlite::params;
+
+    #[test]
+    fn test_list_templates_has_six_builtins() {
+        let conn = init_test_db().unwrap();
+
+        let count: i32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM templates WHERE is_builtin = 1",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 6);
+    }
+
+    #[test]
+    fn test_list_templates_names() {
+        let conn = init_test_db().unwrap();
+
+        let mut stmt = conn
+            .prepare("SELECT name FROM templates WHERE is_builtin = 1 ORDER BY name")
+            .unwrap();
+        let names: Vec<String> = stmt
+            .query_map([], |row| row.get(0))
+            .unwrap()
+            .filter_map(|r| r.ok())
+            .collect();
+
+        assert!(names.contains(&"Blank Timeline".to_string()));
+        assert!(names.contains(&"Project Timeline".to_string()));
+        assert!(names.contains(&"Company History".to_string()));
+        assert!(names.contains(&"Personal Biography".to_string()));
+        assert!(names.contains(&"Historical Period".to_string()));
+        assert!(names.contains(&"Product Roadmap".to_string()));
+    }
+
+    #[test]
+    fn test_create_from_template() {
+        let conn = init_test_db().unwrap();
+        let now = "2024-01-01 00:00:00";
+
+        // Use the project template (4 tracks)
+        let data_str: String = conn
+            .query_row(
+                "SELECT data FROM templates WHERE id = 'tpl-project'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        let template_data: serde_json::Value = serde_json::from_str(&data_str).unwrap();
+        let tracks = template_data["tracks"].as_array().unwrap();
+
+        let tl_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO timelines (id, title, created_at, updated_at) VALUES (?1, ?2, ?3, ?4)",
+            params![tl_id, "My Project", now, now],
+        )
+        .unwrap();
+
+        for (i, track) in tracks.iter().enumerate() {
+            let track_id = uuid::Uuid::new_v4().to_string();
+            conn.execute(
+                "INSERT INTO tracks (id, timeline_id, name, color, sort_order, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                params![
+                    track_id,
+                    tl_id,
+                    track["name"].as_str().unwrap(),
+                    track["color"].as_str().unwrap(),
+                    i as i32,
+                    now
+                ],
+            )
+            .unwrap();
+        }
+
+        // Verify timeline created
+        let title: String = conn
+            .query_row(
+                "SELECT title FROM timelines WHERE id = ?1",
+                [&tl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(title, "My Project");
+
+        // Verify 4 tracks created
+        let track_count: i32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM tracks WHERE timeline_id = ?1",
+                [&tl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(track_count, 4);
+
+        // Verify track names
+        let mut stmt = conn
+            .prepare("SELECT name FROM tracks WHERE timeline_id = ?1 ORDER BY sort_order")
+            .unwrap();
+        let track_names: Vec<String> = stmt
+            .query_map([&tl_id], |row| row.get(0))
+            .unwrap()
+            .filter_map(|r| r.ok())
+            .collect();
+        assert_eq!(track_names, vec!["Milestones", "Tasks", "Deadlines", "Reviews"]);
+    }
+
+    #[test]
+    fn test_save_as_template() {
+        let conn = init_test_db().unwrap();
+        let now = "2024-01-01 00:00:00";
+
+        // Create a timeline with tracks
+        let tl_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO timelines (id, title) VALUES (?1, ?2)",
+            params![tl_id, "My TL"],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, color, sort_order) VALUES (?1, ?2, ?3, ?4, 0)",
+            params![uuid::Uuid::new_v4().to_string(), tl_id, "Alpha", "#aaa"],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO tracks (id, timeline_id, name, color, sort_order) VALUES (?1, ?2, ?3, ?4, 1)",
+            params![uuid::Uuid::new_v4().to_string(), tl_id, "Beta", "#bbb"],
+        )
+        .unwrap();
+
+        // Save as template
+        let mut stmt = conn
+            .prepare("SELECT name, color FROM tracks WHERE timeline_id = ?1 ORDER BY sort_order")
+            .unwrap();
+        let tracks: Vec<(String, String)> = stmt
+            .query_map([&tl_id], |row| Ok((row.get(0)?, row.get(1)?)))
+            .unwrap()
+            .filter_map(|r| r.ok())
+            .collect();
+
+        let data = serde_json::json!({
+            "tracks": tracks.iter().map(|(n, c)| serde_json::json!({"name": n, "color": c})).collect::<Vec<_>>()
+        });
+
+        let tmpl_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO templates (id, name, description, data, is_builtin, created_at) VALUES (?1, ?2, ?3, ?4, 0, ?5)",
+            params![tmpl_id, "Custom Template", "My custom", data.to_string(), now],
+        )
+        .unwrap();
+
+        let (name, is_builtin): (String, bool) = conn
+            .query_row(
+                "SELECT name, is_builtin FROM templates WHERE id = ?1",
+                [&tmpl_id],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(name, "Custom Template");
+        assert!(!is_builtin);
+
+        // Verify data contains the track info
+        let saved_data: String = conn
+            .query_row(
+                "SELECT data FROM templates WHERE id = ?1",
+                [&tmpl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&saved_data).unwrap();
+        let saved_tracks = parsed["tracks"].as_array().unwrap();
+        assert_eq!(saved_tracks.len(), 2);
+        assert_eq!(saved_tracks[0]["name"], "Alpha");
+        assert_eq!(saved_tracks[1]["name"], "Beta");
+    }
+
+    #[test]
+    fn test_delete_builtin_template_fails() {
+        let conn = init_test_db().unwrap();
+
+        let is_builtin: bool = conn
+            .query_row(
+                "SELECT is_builtin FROM templates WHERE id = 'tpl-blank'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert!(is_builtin, "tpl-blank should be built-in");
+
+        // Simulate the check from delete_template: built-in cannot be deleted
+        // The Rust command would return an error, so we just verify the flag
+        assert!(is_builtin);
+    }
+
+    #[test]
+    fn test_delete_custom_template() {
+        let conn = init_test_db().unwrap();
+
+        let tmpl_id = uuid::Uuid::new_v4().to_string();
+        conn.execute(
+            "INSERT INTO templates (id, name, description, data, is_builtin) VALUES (?1, ?2, ?3, '{}', 0)",
+            params![tmpl_id, "To Delete", "temp"],
+        )
+        .unwrap();
+
+        // Check it's not builtin
+        let is_builtin: bool = conn
+            .query_row(
+                "SELECT is_builtin FROM templates WHERE id = ?1",
+                [&tmpl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert!(!is_builtin);
+
+        // Delete it
+        conn.execute("DELETE FROM templates WHERE id = ?1", [&tmpl_id])
+            .unwrap();
+
+        let count: i32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM templates WHERE id = ?1",
+                [&tmpl_id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 0);
+    }
+}

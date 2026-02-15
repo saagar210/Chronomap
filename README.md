@@ -93,6 +93,16 @@ pnpm tauri build
 # -> src-tauri/target/release/bundle/dmg/ChronoMap_0.1.0_aarch64.dmg (5.3 MB)
 ```
 
+### Cleanup Commands
+
+```bash
+# Remove generated build artifacts + .DS_Store files
+pnpm clean
+
+# Also remove node_modules
+pnpm clean:deep
+```
+
 ---
 
 ## Keyboard Shortcuts

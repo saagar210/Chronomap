@@ -145,14 +145,11 @@ src-tauri/src/                # Rust backend
 
 ---
 
-## Tests
+## Verification
 
 ```bash
-# 46 Rust tests
+# Rust tests
 cd src-tauri && cargo test --lib
-
-# 116 frontend tests
-pnpm test
 
 # Lint checks
 cd src-tauri && cargo clippy -- -D warnings
@@ -185,7 +182,7 @@ pnpm exec tsc --noEmit
 | AI | [Ollama](https://ollama.ai/) (local, optional) |
 | PDF Export | [printpdf](https://github.com/nickkjolsing/printpdf) 0.7 |
 | Command Palette | [cmdk](https://cmdk.paco.me/) |
-| Build | Vite 7, Vitest 4 |
+| Build | Vite 7 |
 | File dialogs | [rfd](https://github.com/PolyMeilex/rfd) |
 
 ---

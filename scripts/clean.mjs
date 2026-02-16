@@ -6,10 +6,16 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptDir, "..");
-const deep = process.argv.includes("--deep");
+const args = new Set(process.argv.slice(2));
+const full = args.has("--full") || args.has("--deep");
 
-const removePaths = ["dist", path.join("src-tauri", "target")];
-if (deep) {
+const removePaths = [
+  "dist",
+  path.join("src-tauri", "target"),
+  path.join("node_modules", ".vite"),
+];
+
+if (full) {
   removePaths.push("node_modules");
 }
 
@@ -33,4 +39,4 @@ const walkAndDeleteDsStore = (dir) => {
 
 walkAndDeleteDsStore(rootDir);
 
-console.log(`Clean complete${deep ? " (deep)" : ""}.`);
+console.log(`Clean complete${full ? " (full)" : " (heavy)"}.`);

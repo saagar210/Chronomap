@@ -8,8 +8,11 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "clean": "node scripts/clean.mjs",
-    "clean:deep": "node scripts/clean.mjs --deep"
+    "lean:dev": "node scripts/lean-dev.mjs",
+    "clean": "node scripts/clean.mjs --heavy",
+    "clean:heavy": "node scripts/clean.mjs --heavy",
+    "clean:full": "node scripts/clean.mjs --full",
+    "clean:deep": "node scripts/clean.mjs --full"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

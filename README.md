@@ -79,11 +79,19 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 
 ### Run in Development
 
+Normal dev mode (faster restarts, keeps local build artifacts):
+
 ```bash
 git clone https://github.com/saagar210/Chronomap.git
 cd Chronomap
 pnpm install
 pnpm tauri dev
+```
+
+Lean dev mode (minimizes repo disk growth, cleans heavy artifacts on exit):
+
+```bash
+pnpm lean:dev
 ```
 
 ### Build for Production
@@ -96,12 +104,21 @@ pnpm tauri build
 ### Cleanup Commands
 
 ```bash
-# Remove generated build artifacts + .DS_Store files
-pnpm clean
+# Remove heavy build artifacts only (safe default)
+pnpm clean:heavy
 
-# Also remove node_modules
-pnpm clean:deep
+# Remove all reproducible local caches (includes node_modules)
+pnpm clean:full
 ```
+
+`pnpm clean` remains an alias for `pnpm clean:heavy`.  
+`pnpm clean:deep` remains an alias for `pnpm clean:full`.
+
+### Normal vs Lean Tradeoffs
+
+- `pnpm tauri dev`: uses persistent local caches (`src-tauri/target`, `node_modules/.vite`) for faster subsequent startup/rebuilds, but uses more disk.
+- `pnpm lean:dev`: routes Rust + Vite build caches to temporary folders and runs heavy cleanup when the app exits, which keeps repo disk usage lower but makes each startup slower.
+- Dependency caches are preserved for practical speed (`node_modules` stays unless you run `pnpm clean:full`).
 
 ---
 

@@ -8,10 +8,4 @@ if [[ ! -f "$COMMANDS_FILE" ]]; then
   exit 2
 fi
 
-while IFS= read -r cmd || [[ -n "$cmd" ]]; do
-  [[ -z "${cmd//[[:space:]]/}" ]] && continue
-  [[ "$cmd" =~ ^[[:space:]]*# ]] && continue
-
-  echo ">> $cmd"
-  eval "$cmd"
-done < "$COMMANDS_FILE"
+node .codex/scripts/run_verify_commands.mjs "$COMMANDS_FILE"

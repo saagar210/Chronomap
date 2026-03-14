@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 
 const [baselinePath, currentPath, metric, maxRatio] = process.argv.slice(2);
 if (!baselinePath || !currentPath || !metric || !maxRatio) {
-  console.error("usage: node compare-metric.mjs <baseline.json> <current.json> <metric> <max_ratio>");
+  console.error(
+    "usage: node compare-metric.mjs <baseline.json> <current.json> <metric> <max_ratio>",
+  );
   process.exit(2);
 }
 
@@ -16,8 +18,17 @@ if (typeof b !== "number" || typeof c !== "number") {
   process.exit(2);
 }
 
+if (b <= 0) {
+  console.error(
+    `Baseline metric ${metric} must be > 0 for ratio comparisons. Re-establish baseline before enforcing regression checks.`,
+  );
+  process.exit(2);
+}
+
 const ratio = (c - b) / b;
-console.log(JSON.stringify({ metric, baseline: b, current: c, ratio }, null, 2));
+console.log(
+  JSON.stringify({ metric, baseline: b, current: c, ratio }, null, 2),
+);
 
 if (ratio > Number(maxRatio)) {
   console.error(

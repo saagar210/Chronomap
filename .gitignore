@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+.perf-results
+.codex/reports
+.release
+playwright-report
+test-results
 
 # Editor directories and files
 .vscode/*

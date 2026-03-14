@@ -1,0 +1,23 @@
+name: release-closeout
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version for closeout"
+        required: true
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: |
+          mkdir -p .release
+          cp docs/release/closeout-template.md ".release/closeout-${{ inputs.version }}.md"
+      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: release-closeout-template
+          path: .release/closeout-${{ inputs.version }}.md

@@ -16,6 +16,8 @@ import { WelcomeScreen } from "../common/WelcomeScreen";
 import { ToastContainer } from "../common/Toast";
 import { CommandPalette } from "../common/CommandPalette";
 import { Clock } from "lucide-react";
+import { useUiStore } from "../../stores/ui-store";
+import { NewEventModal } from "../events/NewEventModal";
 
 export function AppShell() {
   const { loadTimelines, activeTimelineId, timelines } = useTimelineStore();
@@ -23,16 +25,16 @@ export function AppShell() {
   const { loadEvents, clearEvents } = useEventStore();
   const { loadConnections, clearConnections } = useConnectionStore();
   const { loadTheme } = useThemeStore();
+  const activeModal = useUiStore((s) => s.activeModal);
+  const closeModal = useUiStore((s) => s.closeModal);
   const [aiOpen, setAiOpen] = useState(false);
   const toggleAi = useCallback(() => setAiOpen((prev) => !prev), []);
   const handleNewEvent = useCallback(() => {
-    // Open the modal for creating a new event
-    const { useUiStore } = require("../../stores/ui-store");
     useUiStore.getState().openModal("create-event");
   }, []);
   const shortcutOptions = useMemo(
     () => ({ onToggleAi: toggleAi, onNewEvent: handleNewEvent }),
-    [toggleAi, handleNewEvent]
+    [toggleAi, handleNewEvent],
   );
   useKeyboardShortcuts(shortcutOptions);
 
@@ -51,7 +53,15 @@ export function AppShell() {
       clearEvents();
       clearConnections();
     }
-  }, [activeTimelineId, loadTracks, loadEvents, loadConnections, clearTracks, clearEvents, clearConnections]);
+  }, [
+    activeTimelineId,
+    loadTracks,
+    loadEvents,
+    loadConnections,
+    clearTracks,
+    clearEvents,
+    clearConnections,
+  ]);
 
   return (
     <div className="h-full flex flex-col">
@@ -74,6 +84,10 @@ export function AppShell() {
         <DetailPanel />
       </div>
       <AiPanel open={aiOpen} onClose={() => setAiOpen(false)} />
+      <NewEventModal
+        open={activeModal === "create-event"}
+        onClose={closeModal}
+      />
       <ToastContainer />
       <CommandPalette />
     </div>

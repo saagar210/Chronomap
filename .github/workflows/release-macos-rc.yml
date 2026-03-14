@@ -1,0 +1,49 @@
+name: release-macos-rc
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (for metadata)"
+        required: true
+      allow_unsigned_release:
+        description: "Allow pre-credential dry run"
+        required: true
+        default: "true"
+
+jobs:
+  build-rc:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    env:
+      ALLOW_UNSIGNED_RELEASE: ${{ inputs.allow_unsigned_release }}
+      APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        with:
+          version: 10.28.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tauri build --bundles app
+      - run: pnpm release:build:dmg
+      - run: bash scripts/release/macos/sign_and_verify.sh
+      - run: bash scripts/release/macos/notarize_and_staple.sh
+      - run: bash scripts/release/generate_metadata.sh "${{ inputs.version }}" "rc" "macos"
+      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: macos-rc-artifacts
+          path: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            .release/*.json
+            release/release-metadata.json

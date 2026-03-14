@@ -23,6 +23,7 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 ## Core Features
 
 ### Timeline Canvas
+
 - **Infinite zoom** from centuries down to hours, with adaptive axis labels
 - **Smooth zoom animation** with lerp-based transitions
 - **Level-of-detail rendering:** dots at far zoom, labels at medium, full detail up close
@@ -34,6 +35,7 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 - **60fps rendering** with Canvas 2D, tested with 5,000+ events
 
 ### AI Research Assistant (Ollama)
+
 - **Research any topic** — ask the AI and get structured timeline events back
 - **Fill gaps** in your timeline with AI-suggested events
 - **Batch add** AI suggestions — add all or cherry-pick with checkboxes
@@ -44,10 +46,12 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 - **Configurable** — set Ollama host, choose model, test connection from settings
 
 ### Import & Export
+
 - **Import:** JSON (full timeline), CSV (with column mapping UI)
 - **Export:** JSON, CSV, Markdown, PNG (1x/2x/3x resolution), SVG, PDF (cover page + timeline pages)
 
 ### Organization
+
 - **Tracks:** Color-coded parallel lanes with drag-and-drop reorder and visibility toggle
 - **Search:** Full-text search powered by SQLite FTS5 — click a result to pan the canvas to it
 - **Filter:** By track, event type, importance, date range, tags, or AI-generated status
@@ -55,6 +59,7 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 - **Command palette** (`Cmd+K`) — fuzzy search for any action, event, or timeline
 
 ### Quality of Life
+
 - **Undo / Redo** (`Cmd+Z` / `Cmd+Shift+Z`) for all event, track, and connection operations
 - **Toast notifications** for success, error, and info feedback
 - **Bulk actions** — select multiple events and change track, color, importance, or delete
@@ -70,12 +75,12 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 
 ### Prerequisites
 
-| Tool | Version | Link |
-|------|---------|------|
-| Rust | 1.75+ | [rustup.rs](https://rustup.rs/) |
-| Node.js | 20+ | [nodejs.org](https://nodejs.org/) |
-| pnpm | 9+ | [pnpm.io](https://pnpm.io/) |
-| Ollama | Latest (optional) | [ollama.ai](https://ollama.ai/) |
+| Tool    | Version           | Link                              |
+| ------- | ----------------- | --------------------------------- |
+| Rust    | 1.75+             | [rustup.rs](https://rustup.rs/)   |
+| Node.js | 20+               | [nodejs.org](https://nodejs.org/) |
+| pnpm    | 9+                | [pnpm.io](https://pnpm.io/)       |
+| Ollama  | Latest (optional) | [ollama.ai](https://ollama.ai/)   |
 
 ### Run in Development
 
@@ -101,6 +106,16 @@ pnpm tauri build
 # -> src-tauri/target/release/bundle/dmg/ChronoMap_0.1.0_aarch64.dmg (5.3 MB)
 ```
 
+### Pre-Release Dry Run (No Notarization Credentials)
+
+```bash
+pnpm release:rc:dry-run
+# builds app + dmg, records signing/notarization status as not-run when credentials are missing
+
+# summarizes what still blocks full release readiness
+pnpm release:readiness
+```
+
 ### Cleanup Commands
 
 ```bash
@@ -124,27 +139,27 @@ pnpm clean:full
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd+K` | Command palette |
-| `Cmd+Z` | Undo |
-| `Cmd+Shift+Z` | Redo |
-| `Cmd+F` | Focus search |
-| `Cmd+N` | New event |
-| `Cmd+D` | Duplicate selected event |
-| `Cmd+0` | Fit all events |
-| `Cmd+=` / `Cmd+-` | Zoom in / out |
-| `Space` | Toggle AI panel |
-| `Delete` | Delete selected event(s) |
-| `Escape` | Deselect / close |
-| `Shift+Click` | Multi-select events |
-| `Shift+Drag` | Box select |
-| Scroll wheel | Zoom centered on cursor |
-| Click + drag (empty) | Pan canvas |
-| Click + drag (event) | Move event |
-| Double-click (empty) | Quick create event |
-| Double-click (event) | Open editor |
-| Right-click event | Context menu |
+| Shortcut             | Action                   |
+| -------------------- | ------------------------ |
+| `Cmd+K`              | Command palette          |
+| `Cmd+Z`              | Undo                     |
+| `Cmd+Shift+Z`        | Redo                     |
+| `Cmd+F`              | Focus search             |
+| `Cmd+N`              | New event                |
+| `Cmd+D`              | Duplicate selected event |
+| `Cmd+0`              | Fit all events           |
+| `Cmd+=` / `Cmd+-`    | Zoom in / out            |
+| `Space`              | Toggle AI panel          |
+| `Delete`             | Delete selected event(s) |
+| `Escape`             | Deselect / close         |
+| `Shift+Click`        | Multi-select events      |
+| `Shift+Drag`         | Box select               |
+| Scroll wheel         | Zoom centered on cursor  |
+| Click + drag (empty) | Pan canvas               |
+| Click + drag (event) | Move event               |
+| Double-click (empty) | Quick create event       |
+| Double-click (event) | Open editor              |
+| Right-click event    | Context menu             |
 
 ---
 
@@ -175,42 +190,47 @@ src-tauri/src/                # Rust backend
 ## Verification
 
 ```bash
-# Rust tests
-cd src-tauri && cargo test --lib
+# Evaluate live Ollama-backed AI quality and write release/ai-eval-report.json
+pnpm ai:eval
 
-# Lint checks
-cd src-tauri && cargo clippy -- -D warnings
-pnpm exec tsc --noEmit
+# Browser smoke flow (uses a mocked Tauri bridge for repeatable UI testing)
+pnpm test:e2e
+
+# Full deterministic verification contract
+pnpm verify
+
+# Gate report output
+cat .codex/reports/gate-report.json
 ```
 
 ---
 
 ## Built-in Templates
 
-| Template | Tracks |
-|----------|--------|
-| Blank Timeline | Default |
-| Project Timeline | Milestones, Tasks, Deadlines, Reviews |
-| Company History | Founding, Products, People, Funding |
-| Personal Biography | Education, Career, Personal, Travel |
-| Historical Period | Politics, Science, Culture, Wars |
-| Product Roadmap | Features, Bugs, Releases, Research |
+| Template           | Tracks                                |
+| ------------------ | ------------------------------------- |
+| Blank Timeline     | Default                               |
+| Project Timeline   | Milestones, Tasks, Deadlines, Reviews |
+| Company History    | Founding, Products, People, Funding   |
+| Personal Biography | Education, Career, Personal, Travel   |
+| Historical Period  | Politics, Science, Culture, Wars      |
+| Product Roadmap    | Features, Bugs, Releases, Research    |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | [Tauri 2](https://tauri.app/) |
-| Frontend | React 19, TypeScript 5.8 (strict), Tailwind CSS 4 |
-| State | [Zustand](https://zustand-demo.pmnd.rs/) |
-| Backend | Rust, [rusqlite](https://github.com/rusqlite/rusqlite) (bundled) |
-| AI | [Ollama](https://ollama.ai/) (local, optional) |
-| PDF Export | [printpdf](https://github.com/nickkjolsing/printpdf) 0.7 |
-| Command Palette | [cmdk](https://cmdk.paco.me/) |
-| Build | Vite 7 |
-| File dialogs | [rfd](https://github.com/PolyMeilex/rfd) |
+| Layer           | Technology                                                       |
+| --------------- | ---------------------------------------------------------------- |
+| Runtime         | [Tauri 2](https://tauri.app/)                                    |
+| Frontend        | React 19, TypeScript 5.8 (strict), Tailwind CSS 4                |
+| State           | [Zustand](https://zustand-demo.pmnd.rs/)                         |
+| Backend         | Rust, [rusqlite](https://github.com/rusqlite/rusqlite) (bundled) |
+| AI              | [Ollama](https://ollama.ai/) (local, optional)                   |
+| PDF Export      | [printpdf](https://github.com/nickkjolsing/printpdf) 0.7         |
+| Command Palette | [cmdk](https://cmdk.paco.me/)                                    |
+| Build           | Vite 7                                                           |
+| File dialogs    | [rfd](https://github.com/PolyMeilex/rfd)                         |
 
 ---
 

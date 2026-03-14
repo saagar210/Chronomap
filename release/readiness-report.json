@@ -1,0 +1,114 @@
+{
+  "generated_at": "2026-03-14T04:28:35.838Z",
+  "ready": false,
+  "checks": {
+    "credentials_ready": false,
+    "release_metadata_present": true,
+    "signing_status_present": true,
+    "notarization_status_present": true,
+    "ai_eval_present": true,
+    "stable_channel_published": false,
+    "dev_channel_published": false
+  },
+  "blockers": [
+    "Apple signing/notarization credentials are not fully configured.",
+    "Release metadata is not signed yet.",
+    "Release metadata is not notarized yet."
+  ],
+  "warnings": [
+    "Stable channel metadata has no published artifact yet.",
+    "Dev channel metadata has no published artifact yet."
+  ],
+  "artifacts": {
+    "metadata": {
+      "version": "0.1.0",
+      "channel": "rc",
+      "platform": "macos",
+      "signed": false,
+      "notarized": false,
+      "checksum": "415de572220eaa53eb1205c2bc09f5da7b81f652e74ca1dfcf010247029446d2",
+      "provenance_attestation_uri": ""
+    },
+    "signing_status": {
+      "status": "not-run",
+      "signed": false,
+      "reason": "Signing credentials not provided",
+      "timestamp": "2026-03-14T04:20:56Z"
+    },
+    "notarization_status": {
+      "status": "not-run",
+      "notarized": false,
+      "reason": "Apple notarization credentials not provided",
+      "timestamp": "2026-03-14T04:20:56Z"
+    },
+    "ai_eval": {
+      "suite": "core-ai-fallback",
+      "host": "http://localhost:11434",
+      "model": "llama3.2:latest",
+      "generated_at": "2026-03-14T04:27:43.583Z",
+      "pass_rate": 1,
+      "format_validity_rate": 1,
+      "fallback_path_passed": true,
+      "blocked_cases": [],
+      "cases": [
+        {
+          "id": "research_topic",
+          "pass": true,
+          "format_valid": true,
+          "raw_format_valid": true,
+          "reason": "",
+          "event_count": 2,
+          "raw_preview": "[\n  {\n    \"title\": \"Apollo 11 Moon Landing\",\n    \"description\": \"First manned mission to land on the moon\",\n    \"start_date\": \"1969-07-16\",\n    \"end_date\": \"1969-07-24\",\n    \"event_type\": \"milestone\",\n    \"importance\": 5,\n    \"confidence\": 1.0\n  },\n  {\n    \"title\": \"Apollo 13 Launch\",\n    \"descripti"
+        },
+        {
+          "id": "fill_gaps",
+          "pass": true,
+          "format_valid": true,
+          "raw_format_valid": true,
+          "reason": "",
+          "event_count": 4,
+          "raw_preview": "[\n  {\n    \"title\": \"NASA Announces Apollo Program\",\n    \"description\": \"President John F. Kennedy announces the Apollo program during a speech at Rice University.\",\n    \"start_date\": \"1961-02-12\",\n    \"end_date\": \"1961-02-12\",\n    \"event_type\": \"milestone\",\n    \"importance\": 3,\n    \"confidence\": 0.8"
+        },
+        {
+          "id": "generate_description",
+          "pass": true,
+          "format_valid": true,
+          "reason": "",
+          "raw_preview": "On July 20, 1969, NASA's Apollo 11 mission made history by successfully landing on the surface of the Moon. The spacecraft, carrying astronauts Neil Armstrong, Edwin \"Buzz\" Aldrin, and Michael Collins, entered into lunar orbit on July 19. The next day, Armstrong and Aldrin suited up in their spacesu"
+        },
+        {
+          "id": "fact_check",
+          "pass": true,
+          "format_valid": true,
+          "reason": "",
+          "raw_preview": "Accuracy Evaluation:\n\n**Event:** Apollo 11 Moon Landing\n**Date:** 1969-07-20\n**Description:** Apollo 11 landed on the Moon and returned safely to Earth.\n\n**Accuracy Score:** 100%\n\n**Corrections:** None needed.\n\nThe Apollo 11 mission, crewed by astronauts Neil Armstrong, Edwin \"Buzz\" Aldrin, and Mich"
+        },
+        {
+          "id": "chat_events",
+          "pass": true,
+          "format_valid": true,
+          "raw_format_valid": false,
+          "reason": "",
+          "event_count": 2,
+          "raw_preview": "The Apollo program was a historic NASA mission that aimed to land humans on the Moon and return them safely to Earth. The program was a culmination of years of research, development, and testing, and it marked a significant achievement in space exploration.\n\nThe Apollo program was launched in 1961 b"
+        }
+      ]
+    },
+    "stable_channel": {
+      "channel": "stable",
+      "platform": "macos",
+      "version": "0.1.0",
+      "artifact": "",
+      "checksum": "",
+      "publishedAt": ""
+    },
+    "dev_channel": {
+      "channel": "dev",
+      "platform": "macos",
+      "version": "0.1.0",
+      "artifact": "",
+      "checksum": "",
+      "publishedAt": ""
+    }
+  }
+}

@@ -1,0 +1,19 @@
+name: promote-macos-ga
+
+on:
+  workflow_dispatch:
+    inputs:
+      rc_metadata_artifact:
+        description: "Path or artifact containing release-metadata RC payload"
+        required: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: |
+          cp "${{ inputs.rc_metadata_artifact }}" release/release-metadata-rc.json
+          bash scripts/release/promote_immutable.sh release/release-metadata-rc.json release/release-metadata.json

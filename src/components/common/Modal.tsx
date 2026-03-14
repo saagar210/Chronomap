@@ -30,7 +30,12 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="bg-bg border border-border rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[85vh] flex flex-col">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="bg-bg border border-border rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[85vh] flex flex-col"
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h2 className="text-sm font-semibold">{title}</h2>
           <button

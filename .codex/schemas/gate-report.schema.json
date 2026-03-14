@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chronomap.local/schemas/gate-report.schema.json",
+  "title": "Gate Report",
+  "type": "object",
+  "required": ["generated_at", "overall_status", "gates"],
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "overall_status": { "type": "string", "enum": ["pass", "fail"] },
+    "command_file": { "type": "string" },
+    "counts": { "type": "object" },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gate_id",
+          "status",
+          "threshold",
+          "evidence_uri",
+          "timestamp",
+          "owner",
+          "waiver_id"
+        ],
+        "properties": {
+          "gate_id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "fail", "not-run", "waived"]
+          },
+          "threshold": { "type": "string" },
+          "evidence_uri": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "owner": { "type": "string" },
+          "waiver_id": { "type": ["string", "null"] }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

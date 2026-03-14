@@ -1,7 +1,17 @@
-pnpm lint
-pnpm typecheck
-pnpm test:coverage
-pnpm test:integration
-pnpm test:e2e:smoke
-pnpm docs:generate
-pnpm docs:check
+# codex-os-managed
+# gate_id|required|owner|threshold|command|env_var(optional)
+preflight|true|release|required files, scripts, baselines, and CSP are valid|pnpm preflight
+
+git_hygiene|true|qa|all git safety guards pass|pnpm git:guard:all
+
+typecheck_ts|true|qa|TypeScript noEmit passes|pnpm typecheck
+rust_tests|true|qa|Rust library tests pass|pnpm test:rust
+rust_lint|true|qa|Rust clippy runs with -D warnings|pnpm lint:rust
+ui_smoke|true|qa|Browser smoke flow passes|pnpm test:e2e
+
+perf_bundle|true|performance|bundle metrics captured|pnpm perf:bundle
+perf_build|true|performance|build-time metrics captured|pnpm perf:build
+perf_assets|true|performance|asset budgets pass|pnpm perf:assets
+perf_memory|true|performance|memory budgets pass|pnpm perf:memory
+perf_summary|true|performance|summary generated|pnpm perf:summary
+perf_complete|true|performance|required perf gates are not-run free|pnpm perf:assert-complete

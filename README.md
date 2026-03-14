@@ -3,75 +3,160 @@
   <img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=333" alt="React 19" />
   <img src="https://img.shields.io/badge/Rust-000?style=for-the-badge&logo=rust&logoColor=white" alt="Rust" />
   <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
-  <img src="https://img.shields.io/badge/Tailwind_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind 4" />
+  <img src="https://img.shields.io/badge/Ollama-111?style=for-the-badge" alt="Ollama" />
 </p>
 
 # ChronoMap
 
-### Build beautiful, interactive timelines — powered by local AI.
+### A local-first desktop studio for turning messy research into living, navigable timelines.
 
-ChronoMap is a native desktop app for creating rich, zoomable timelines with an AI research assistant. Built with Tauri 2 + React + Rust + SQLite. **Your data never leaves your machine.**
+ChronoMap is for the moment when a topic gets too big for notes, too tangled for spreadsheets, and too interesting to leave flattened into a list.
 
----
+Open a blank canvas. Drop in milestones, ranges, eras, and connected events. Zoom from centuries to single days. Pull in AI-assisted suggestions from a local Ollama model. Import real data, export polished artifacts, and keep everything on your machine.
 
-## Why ChronoMap?
-
-Ever tried mapping out the history of something — a war, a company, a technology — and wished you had a tool that was more than just a flat list? ChronoMap gives you an infinite, zoomable canvas where you can **see** time unfold. Drag events around. Draw connections between moments. Let AI fill in the gaps you didn't know existed.
+**If you want to map the history of a company, a product, a war, a scientific field, a personal journey, or an entire fictional universe, ChronoMap is built for that kind of thinking.**
 
 ---
 
-## Core Features
+## Why it feels different
 
-### Timeline Canvas
+Most timeline tools treat time like a static report.
 
-- **Infinite zoom** from centuries down to hours, with adaptive axis labels
-- **Smooth zoom animation** with lerp-based transitions
-- **Level-of-detail rendering:** dots at far zoom, labels at medium, full detail up close
-- **Four event types:** point, range, milestone, and era (translucent background bands)
-- **Drag to move** events across dates and tracks
-- **Bezier curve connections** between related events, styled by relationship type
-- **Multi-select** via Shift+click or rubber-band box select
-- **Quick create** — double-click empty space to add an event instantly
-- **60fps rendering** with Canvas 2D, tested with 5,000+ events
+ChronoMap treats time like a space you can explore.
 
-### AI Research Assistant (Ollama)
+- Create timelines on an infinite, zoomable canvas
+- Organize stories into color-coded parallel tracks
+- Link related events so causes, echoes, and dependencies become visible
+- Ask a local AI assistant to suggest missing events, generate descriptions, or fact-check details
+- Search, filter, and reshape your timeline without losing the bigger picture
 
-- **Research any topic** — ask the AI and get structured timeline events back
-- **Fill gaps** in your timeline with AI-suggested events
-- **Batch add** AI suggestions — add all or cherry-pick with checkboxes
-- **Generate descriptions** for events with one click
-- **Suggest connections** between related events
-- **Fact-check** events against the AI's knowledge (right-click context menu)
-- **Chat** with a context-aware research assistant (auto-includes timeline context)
-- **Configurable** — set Ollama host, choose model, test connection from settings
-
-### Import & Export
-
-- **Import:** JSON (full timeline), CSV (with column mapping UI)
-- **Export:** JSON, CSV, Markdown, PNG (1x/2x/3x resolution), SVG, PDF (cover page + timeline pages)
-
-### Organization
-
-- **Tracks:** Color-coded parallel lanes with drag-and-drop reorder and visibility toggle
-- **Search:** Full-text search powered by SQLite FTS5 — click a result to pan the canvas to it
-- **Filter:** By track, event type, importance, date range, tags, or AI-generated status
-- **Templates:** 6 built-in templates + save your own
-- **Command palette** (`Cmd+K`) — fuzzy search for any action, event, or timeline
-
-### Quality of Life
-
-- **Undo / Redo** (`Cmd+Z` / `Cmd+Shift+Z`) for all event, track, and connection operations
-- **Toast notifications** for success, error, and info feedback
-- **Bulk actions** — select multiple events and change track, color, importance, or delete
-- **Dark / Light / System** theme
-- **Keyboard shortcuts** for everything (see below)
-- **Right-click context menu** with edit, duplicate, delete, connect, fact-check
-- **Collapsible sidebar** for a wider canvas
-- **Welcome screen** with Create Blank, Use Template, and Import options
+This is not just a place to store dates. It is a place to think with them.
 
 ---
 
-## Quick Start
+## What you can do with ChronoMap
+
+### Build timelines that actually breathe
+
+- Add **point**, **range**, **milestone**, and **era** events
+- Drag events across time and tracks
+- Zoom from a birds-eye historical view down to fine-grained detail
+- Draw visual connections between related moments
+- Multi-select, bulk edit, and use undo/redo while you explore
+
+### Turn research into structure faster
+
+- Start from a blank timeline or one of the built-in templates
+- Import timeline data from JSON or CSV
+- Search with SQLite FTS5 and jump straight to matching events
+- Filter by track, event type, importance, date range, tags, or AI-generated status
+
+### Use AI without giving up privacy
+
+- Connect to **Ollama** running locally
+- Ask for event suggestions on a topic
+- Fill gaps in an existing timeline
+- Generate descriptions for sparse events
+- Suggest connections between moments
+- Chat with an assistant that can use current timeline context
+- Test your AI connection and model settings inside the app
+
+### Export something worth sharing
+
+- Export to **JSON**, **CSV**, and **Markdown**
+- Generate **PNG**, **SVG**, and **PDF** output
+- Keep a structured working file while still shipping polished deliverables
+
+---
+
+## Who this is for
+
+ChronoMap is especially useful for:
+
+- researchers and students
+- writers and worldbuilders
+- historians and documentary-minded teams
+- founders mapping company or product history
+- PMs exploring roadmap evolution
+- anyone who thinks better when time becomes visual
+
+---
+
+## The experience in one minute
+
+1. Create a blank timeline or pick a template.
+2. Add tracks like "People", "Products", "Wars", "Releases", or "Funding".
+3. Drop in a few anchor events.
+4. Ask the AI assistant to suggest what is missing.
+5. Connect related moments.
+6. Zoom out and suddenly the whole story starts making sense.
+
+That is the core magic of ChronoMap: it helps patterns emerge.
+
+---
+
+## Core highlights
+
+### Canvas and navigation
+
+- Infinite zoom with adaptive axis labels
+- Smooth zoom animation and responsive canvas rendering
+- Level-of-detail rendering that changes based on zoom
+- Quick-create flow for adding events fast
+- Pan, select, drag, and inspect without leaving the main workspace
+
+### Organization and editing
+
+- Track management with reordering and visibility control
+- Command palette for fast action access
+- Detail panel editing
+- Context menus and keyboard shortcuts
+- Toast feedback and collapsible workspace panels
+
+### AI assistant
+
+- Local Ollama-backed suggestions and chat
+- Structured event generation
+- Timeline-aware prompts
+- Fact-checking and connection suggestion flows
+- Settings panel for host and model configuration
+
+### Import, templates, and exports
+
+- JSON import/export for full fidelity
+- CSV import with mapping flow
+- Built-in starter templates
+- Markdown, image, SVG, and PDF export paths
+
+---
+
+## Built-in templates
+
+- Blank Timeline
+- Project Timeline
+- Company History
+- Personal Biography
+- Historical Period
+- Product Roadmap
+
+These are designed to get you past the empty-canvas moment quickly.
+
+---
+
+## Local-first by design
+
+ChronoMap is a native desktop app built with **Tauri 2**, **React 19**, **Rust**, and **SQLite**.
+
+Your timelines live locally. AI can be local too. That means:
+
+- no mandatory cloud dependency
+- lower latency for interactive editing
+- better privacy for sensitive research
+- a tool that still feels like a real desktop app, not a web page in disguise
+
+---
+
+## Quick start
 
 ### Prerequisites
 
@@ -82,9 +167,7 @@ Ever tried mapping out the history of something — a war, a company, a technolo
 | pnpm    | 9+                | [pnpm.io](https://pnpm.io/)       |
 | Ollama  | Latest (optional) | [ollama.ai](https://ollama.ai/)   |
 
-### Run in Development
-
-Normal dev mode (faster restarts, keeps local build artifacts):
+### Run in development
 
 ```bash
 git clone https://github.com/saagar210/Chronomap.git
@@ -93,144 +176,85 @@ pnpm install
 pnpm tauri dev
 ```
 
-Lean dev mode (minimizes repo disk growth, cleans heavy artifacts on exit):
+### Lean dev mode
 
 ```bash
 pnpm lean:dev
 ```
 
-### Build for Production
+Use `lean:dev` when you want a smaller local disk footprint and are okay with slower restarts.
+
+### Build for production
 
 ```bash
 pnpm tauri build
-# -> src-tauri/target/release/bundle/dmg/ChronoMap_0.1.0_aarch64.dmg (5.3 MB)
 ```
 
-### Pre-Release Dry Run (No Notarization Credentials)
+---
+
+## Contributor commands
+
+### Verification
 
 ```bash
-pnpm release:rc:dry-run
-# builds app + dmg, records signing/notarization status as not-run when credentials are missing
+pnpm test:e2e
+pnpm ai:eval
+pnpm verify
+```
 
-# summarizes what still blocks full release readiness
+### Release-oriented checks
+
+```bash
+pnpm release:check-secrets
+pnpm release:rc:dry-run
 pnpm release:readiness
 ```
 
-### Cleanup Commands
+### Cleanup
 
 ```bash
-# Remove heavy build artifacts only (safe default)
 pnpm clean:heavy
-
-# Remove all reproducible local caches (includes node_modules)
 pnpm clean:full
 ```
 
-`pnpm clean` remains an alias for `pnpm clean:heavy`.  
-`pnpm clean:deep` remains an alias for `pnpm clean:full`.
+---
 
-### Normal vs Lean Tradeoffs
+## Keyboard shortcuts
 
-- `pnpm tauri dev`: uses persistent local caches (`src-tauri/target`, `node_modules/.vite`) for faster subsequent startup/rebuilds, but uses more disk.
-- `pnpm lean:dev`: routes Rust + Vite build caches to temporary folders and runs heavy cleanup when the app exits, which keeps repo disk usage lower but makes each startup slower.
-- Dependency caches are preserved for practical speed (`node_modules` stays unless you run `pnpm clean:full`).
+| Shortcut          | Action                   |
+| ----------------- | ------------------------ |
+| `Cmd+K`           | Command palette          |
+| `Cmd+Z`           | Undo                     |
+| `Cmd+Shift+Z`     | Redo                     |
+| `Cmd+F`           | Focus search             |
+| `Cmd+N`           | New event                |
+| `Cmd+D`           | Duplicate selected event |
+| `Cmd+0`           | Fit all events           |
+| `Cmd+=` / `Cmd+-` | Zoom in / out            |
+| `Space`           | Toggle AI panel          |
+| `Delete`          | Delete selected event(s) |
+| `Escape`          | Deselect / close         |
 
 ---
 
-## Keyboard Shortcuts
+## Tech stack
 
-| Shortcut             | Action                   |
-| -------------------- | ------------------------ |
-| `Cmd+K`              | Command palette          |
-| `Cmd+Z`              | Undo                     |
-| `Cmd+Shift+Z`        | Redo                     |
-| `Cmd+F`              | Focus search             |
-| `Cmd+N`              | New event                |
-| `Cmd+D`              | Duplicate selected event |
-| `Cmd+0`              | Fit all events           |
-| `Cmd+=` / `Cmd+-`    | Zoom in / out            |
-| `Space`              | Toggle AI panel          |
-| `Delete`             | Delete selected event(s) |
-| `Escape`             | Deselect / close         |
-| `Shift+Click`        | Multi-select events      |
-| `Shift+Drag`         | Box select               |
-| Scroll wheel         | Zoom centered on cursor  |
-| Click + drag (empty) | Pan canvas               |
-| Click + drag (event) | Move event               |
-| Double-click (empty) | Quick create event       |
-| Double-click (event) | Open editor              |
-| Right-click event    | Context menu             |
+- **Runtime:** Tauri 2
+- **Frontend:** React 19 + TypeScript
+- **Backend:** Rust
+- **Data layer:** SQLite with WAL and FTS5
+- **State:** Zustand
+- **Build:** Vite 7
+- **AI:** Ollama
+- **Exports:** SVG, PDF, image, and structured data formats
 
 ---
 
-## Architecture
+## Status
 
-```
-src/                          # React 19 + TypeScript (strict mode)
-  components/                 #   Canvas renderer, layout, AI panel, search, etc.
-  stores/                     #   9 independent Zustand stores
-  hooks/                      #   Canvas rendering, zoom/pan, keyboard shortcuts
-  lib/                        #   Types, IPC commands, date math, utilities
+ChronoMap is already a substantial desktop app with a real editing surface, local persistence, AI integration, import/export flows, and verification tooling. It is still evolving, but it is far beyond a scaffold.
 
-src-tauri/src/                # Rust backend
-  commands/                   #   ~47 Tauri IPC commands
-  db/                         #   SQLite with WAL, 3 migrations, FTS5
-  ai/                         #   Ollama HTTP client + prompt templates
-  export/                     #   SVG + PDF generation
-```
-
-**State management:** 9 independent Zustand stores with no circular dependencies. Canvas reads from stores via `getState()` to avoid React re-render overhead during rendering.
-
-**Rendering:** Canvas 2D with `requestAnimationFrame` loop and dirty-flag optimization. Smooth zoom via lerp animation. Level-of-detail rendering adjusts visual complexity based on zoom level. Only redraws when data or viewport changes.
-
-**Data:** Everything lives in a local SQLite database with WAL mode, foreign key enforcement, and FTS5 full-text search.
-
----
-
-## Verification
-
-```bash
-# Evaluate live Ollama-backed AI quality and write release/ai-eval-report.json
-pnpm ai:eval
-
-# Browser smoke flow (uses a mocked Tauri bridge for repeatable UI testing)
-pnpm test:e2e
-
-# Full deterministic verification contract
-pnpm verify
-
-# Gate report output
-cat .codex/reports/gate-report.json
-```
-
----
-
-## Built-in Templates
-
-| Template           | Tracks                                |
-| ------------------ | ------------------------------------- |
-| Blank Timeline     | Default                               |
-| Project Timeline   | Milestones, Tasks, Deadlines, Reviews |
-| Company History    | Founding, Products, People, Funding   |
-| Personal Biography | Education, Career, Personal, Travel   |
-| Historical Period  | Politics, Science, Culture, Wars      |
-| Product Roadmap    | Features, Bugs, Releases, Research    |
-
----
-
-## Tech Stack
-
-| Layer           | Technology                                                       |
-| --------------- | ---------------------------------------------------------------- |
-| Runtime         | [Tauri 2](https://tauri.app/)                                    |
-| Frontend        | React 19, TypeScript 5.8 (strict), Tailwind CSS 4                |
-| State           | [Zustand](https://zustand-demo.pmnd.rs/)                         |
-| Backend         | Rust, [rusqlite](https://github.com/rusqlite/rusqlite) (bundled) |
-| AI              | [Ollama](https://ollama.ai/) (local, optional)                   |
-| PDF Export      | [printpdf](https://github.com/nickkjolsing/printpdf) 0.7         |
-| Command Palette | [cmdk](https://cmdk.paco.me/)                                    |
-| Build           | Vite 7                                                           |
-| File dialogs    | [rfd](https://github.com/PolyMeilex/rfd)                         |
+If you care about timelines as a thinking tool, this is a project worth trying.
 
 ---
 
@@ -241,5 +265,5 @@ MIT
 ---
 
 <p align="center">
-  <em>Built with Tauri, React, Rust, and a healthy obsession with timelines.</em>
+  <em>ChronoMap is built for people who want to see the shape of a story, not just read the dates.</em>
 </p>

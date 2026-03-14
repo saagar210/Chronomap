@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chronomap.local/schemas/ai-eval-report.schema.json",
+  "title": "AI Eval Report",
+  "type": "object",
+  "required": [
+    "suite",
+    "pass_rate",
+    "format_validity_rate",
+    "fallback_path_passed",
+    "blocked_cases"
+  ],
+  "properties": {
+    "suite": { "type": "string" },
+    "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "format_validity_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "fallback_path_passed": { "type": "boolean" },
+    "blocked_cases": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

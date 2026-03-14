@@ -1,0 +1,36 @@
+name: attest-sbom
+
+on:
+  workflow_dispatch:
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Build minimal SBOM document
+        run: |
+          mkdir -p .release
+          cat > .release/sbom.cyclonedx.json <<JSON
+          {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.6",
+            "version": 1,
+            "metadata": {
+              "component": {
+                "type": "application",
+                "name": "chronomap",
+                "version": "0.1.0"
+              }
+            },
+            "components": []
+          }
+          JSON
+      - uses: actions/attest-sbom@v3
+        with:
+          sbom-path: .release/sbom.cyclonedx.json
+          subject-path: package.json

@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "channel": "rc",
+  "platform": "macos",
+  "signed": false,
+  "notarized": false,
+  "checksum": "415de572220eaa53eb1205c2bc09f5da7b81f652e74ca1dfcf010247029446d2",
+  "provenance_attestation_uri": ""
+}

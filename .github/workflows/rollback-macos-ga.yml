@@ -1,0 +1,17 @@
+name: rollback-macos-ga
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: "Stable version to roll back to"
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: bash scripts/release/rollback_channel.sh "${{ inputs.target_version }}"

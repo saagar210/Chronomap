@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chronomap.local/schemas/release-metadata.schema.json",
+  "title": "Release Metadata",
+  "type": "object",
+  "required": [
+    "version",
+    "channel",
+    "platform",
+    "signed",
+    "notarized",
+    "checksum",
+    "provenance_attestation_uri"
+  ],
+  "properties": {
+    "version": { "type": "string" },
+    "channel": { "type": "string", "enum": ["dev", "rc", "stable"] },
+    "platform": { "type": "string", "const": "macos" },
+    "signed": { "type": "boolean" },
+    "notarized": { "type": "boolean" },
+    "checksum": { "type": "string" },
+    "provenance_attestation_uri": { "type": "string" }
+  },
+  "additionalProperties": true
+}

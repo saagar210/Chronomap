@@ -43,6 +43,7 @@ export function TrackForm({
         className="flex flex-col gap-3"
       >
         <Input
+          id="track-name"
           label="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -50,7 +51,9 @@ export function TrackForm({
           autoFocus
         />
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-text-secondary">Color</label>
+          <label className="text-xs font-medium text-text-secondary">
+            Color
+          </label>
           <div className="flex gap-1.5 flex-wrap">
             {TRACK_COLORS.map((c) => (
               <button
@@ -59,7 +62,7 @@ export function TrackForm({
                 onClick={() => setColor(c)}
                 className={cn(
                   "w-6 h-6 rounded-full border-2 cursor-pointer transition-transform",
-                  color === c ? "border-text scale-110" : "border-transparent"
+                  color === c ? "border-text scale-110" : "border-transparent",
                 )}
                 style={{ backgroundColor: c }}
               />

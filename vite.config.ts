@@ -6,6 +6,8 @@ import tailwindcss from "@tailwindcss/vite";
 const host = process.env.TAURI_DEV_HOST;
 // @ts-expect-error process is a nodejs global
 const viteCacheDir = process.env.VITE_CACHE_DIR;
+// @ts-expect-error process is a nodejs global
+const vitePort = Number(process.env.VITE_PORT || 1420);
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
@@ -13,7 +15,7 @@ export default defineConfig(async () => ({
   clearScreen: false,
   cacheDir: viteCacheDir || undefined,
   server: {
-    port: 1420,
+    port: vitePort,
     strictPort: true,
     host: host || false,
     hmr: host

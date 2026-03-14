@@ -15,9 +15,9 @@ import { useTimelineStore } from "../../stores/timeline-store";
 import { useThemeStore } from "../../stores/theme-store";
 import { useCanvasStore } from "../../stores/canvas-store";
 import { useEventStore } from "../../stores/event-store";
-import { useTrackStore } from "../../stores/track-store";
 import { useHistoryStore } from "../../stores/history-store";
 import { useToastStore } from "../../stores/toast-store";
+import { useUiStore } from "../../stores/ui-store";
 import { fitAllEvents } from "../../lib/canvas-math";
 import { IconButton } from "../common/IconButton";
 import { Modal } from "../common/Modal";
@@ -34,10 +34,10 @@ interface TitleBarProps {
 }
 
 export function TitleBar({ onToggleAi }: TitleBarProps) {
-  const { timelines, activeTimelineId, setActiveTimeline } =
-    useTimelineStore();
+  const { timelines, activeTimelineId, setActiveTimeline } = useTimelineStore();
   const { createTimeline } = useTimelineStore();
   const { theme, setTheme } = useThemeStore();
+  const openModal = useUiStore((s) => s.openModal);
   const undoStack = useHistoryStore((s) => s.undoStack);
   const redoStack = useHistoryStore((s) => s.redoStack);
 
@@ -63,34 +63,15 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
     useToastStore.getState().addToast({ type: "info", title: "Redone" });
   };
   const [showNewDialog, setShowNewDialog] = useState(false);
-  const [showNewEvent, setShowNewEvent] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [eventTitle, setEventTitle] = useState("");
-  const [eventDate, setEventDate] = useState("");
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
     await createTimeline({ title: newTitle.trim() });
     setNewTitle("");
     setShowNewDialog(false);
-  };
-
-  const handleCreateEvent = async () => {
-    if (!eventTitle.trim() || !eventDate.trim()) return;
-    const { tracks } = useTrackStore.getState();
-    if (tracks.length === 0 || !activeTimelineId) return;
-    await useEventStore.getState().createEvent({
-      timelineId: activeTimelineId,
-      trackId: tracks[0].id,
-      title: eventTitle.trim(),
-      startDate: eventDate.trim(),
-    });
-    setEventTitle("");
-    setEventDate("");
-    setShowNewEvent(false);
-    useCanvasStore.getState().markDirty();
   };
 
   const handleFitAll = () => {
@@ -149,7 +130,7 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
             <div className="w-px h-5 bg-border" />
             <IconButton
               tooltip="Add event"
-              onClick={() => setShowNewEvent(true)}
+              onClick={() => openModal("create-event")}
             >
               <Plus size={16} />
             </IconButton>
@@ -184,10 +165,7 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
 
         {activeTimelineId && (
           <>
-            <IconButton
-              tooltip="Import"
-              onClick={() => setShowImport(true)}
-            >
+            <IconButton tooltip="Import" onClick={() => setShowImport(true)}>
               <Upload size={16} />
             </IconButton>
             <ExportMenu />
@@ -233,55 +211,7 @@ export function TitleBar({ onToggleAi }: TitleBarProps) {
             >
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={!newTitle.trim()}
-            >
-              Create
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal
-        open={showNewEvent}
-        onClose={() => setShowNewEvent(false)}
-        title="New Event"
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleCreateEvent();
-          }}
-          className="flex flex-col gap-3"
-        >
-          <Input
-            label="Title"
-            value={eventTitle}
-            onChange={(e) => setEventTitle(e.target.value)}
-            placeholder="Event title"
-            autoFocus
-          />
-          <Input
-            label="Date"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
-            placeholder="YYYY-MM-DD"
-          />
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => setShowNewEvent(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={!eventTitle.trim() || !eventDate.trim()}
-            >
+            <Button variant="primary" type="submit" disabled={!newTitle.trim()}>
               Create
             </Button>
           </div>
